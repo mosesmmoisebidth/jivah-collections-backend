@@ -1,5 +1,5 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { UserEntity } from 'src/modules/users/model/user.entity';
+import { UserEntity } from 'src/modules/users/model/users.entity';
 import { ExtractJwt } from 'passport-jwt';
 
 export const CurrentUser = createParamDecorator<UserEntity>(

@@ -1,7 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne, Relation } from 'typeorm';
 import { CommonEntity } from 'src/common/entities';
 import { TokenType } from '../enums';
-import { UserEntity } from '../../users/model/user.entity';
+import { UserEntity } from 'src/modules/users/model/users.entity';
 
 @Entity({ schema: "users",name: 'tokens' })
 export class TokenEntity extends CommonEntity {

@@ -1,11 +1,11 @@
 import { Permission } from "./permissions-type"
 export const permissions: Permission[] = [
-    { slug: 'create.users', description: 'Create buyers or sellers' },
-    { slug: 'read.users', description: 'Read buyres or sellers' },
-    { slug: 'update.users', description: 'Update buyers or sellers' },
-    { slug: 'delete.users', description: 'Delete buyers or sellers' },
-    { slug: 'create.properties', description: 'Read his/her own properties' },
-    { slug: 'read.properties', description: 'Read his/her own properties' },
-    { slug: 'update.properties', description: 'Update his/her own properties' },
-    { slug: 'delete.properties', description: 'Delete his/her own properties' },
+    { slug: 'create.users', description: 'Create users' },
+    { slug: 'read.users', description: 'Read users' },
+    { slug: 'update.users', description: 'Update users' },
+    { slug: 'delete.users', description: 'Delete users' },
+    { slug: 'create.products', description: 'Read his/her own products' },
+    { slug: 'read.products', description: 'Read his/her own products' },
+    { slug: 'update.products', description: 'Update his/her own products' },
+    { slug: 'delete.products', description: 'Delete his/her own products' },
 ]

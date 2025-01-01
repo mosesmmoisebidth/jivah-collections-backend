@@ -5,7 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import { EResetPasswordStatus } from './enums/reset-password.status';
 import { ResetPasswordRepository } from './model/reset-password.repository';
 import { ConfigKeyPaths } from 'src/config';
-import { UserEntity } from '../users/model/user.entity';
+import { UserEntity } from '../users/model/users.entity';
 
 @Injectable()
 export class ResetPasswordService {

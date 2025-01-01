@@ -8,8 +8,7 @@ import {
 } from 'typeorm';
 import { CommonEntity } from 'src/common/entities';
 import { EOTPStatus } from '../enums/otp.status';
-import { UserEntity } from '../../users/model/user.entity';
-
+import { UserEntity } from 'src/modules/users/model/users.entity';
 @Entity({ schema: 'users', name: 'otps' })
 export class OTPEntity extends CommonEntity {
   @PrimaryGeneratedColumn('uuid')

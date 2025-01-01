@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { EOTPStatus } from './enums/otp.status';
 import { OTPEntity } from './model/otp.entity';
 import { OTPRepository } from './model/otp.repository';
-import { UserEntity } from '../users/model/user.entity';
+import { UserEntity } from '../users/model/users.entity';
 
 type CreateOTPType = {
   user: UserEntity;

@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { CommonEntity } from 'src/common/entities';
 import { EResetPasswordStatus } from '../enums/reset-password.status';
-import { UserEntity } from 'src/modules/users/model/user.entity';
+import { UserEntity } from 'src/modules/users/model/users.entity';
 @Entity({ schema: "users", name: 'reset-passwords' })
 export class ResetPasswordEntity extends CommonEntity {
   @PrimaryGeneratedColumn('uuid')

@@ -4,7 +4,6 @@ import { PermissionDto } from 'src/modules/permissions/dtos/permission-dto';
 import { BaseDto } from 'src/common/dtos/base.dto';
 import { UserStatus } from 'src/modules/auth/enums/user-status.enum';
 import { ERoleType } from 'src/modules/roles/enums/role.enum';
-import { PropertyDto } from 'src/modules/property/dto/property.dto';
 
 export class UserDto extends BaseDto {
   @ApiProperty()
@@ -30,9 +29,6 @@ export class UserDto extends BaseDto {
 
   @ApiProperty({ type: [PermissionDto] })
   permissions?: PermissionDto[];
-
-  @ApiProperty({ type: [PropertyDto]})
-  properties?: PropertyDto[];
 
   @ApiProperty()
   role: ERoleType;

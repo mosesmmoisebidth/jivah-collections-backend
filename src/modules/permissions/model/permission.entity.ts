@@ -1,7 +1,7 @@
 import { Entity, Column, ManyToMany } from 'typeorm';
 import { CommonEntity } from 'src/common/entities';
 import { RoleEntity } from '../../roles/model/role.entity';
-import { UserEntity } from '../../users/model/user.entity';
+import { UserEntity } from 'src/modules/users/model/users.entity';
 
 @Entity({ schema: "users", name: 'permissions' })
 export class PermissionEntity extends CommonEntity {

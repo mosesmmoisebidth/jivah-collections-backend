@@ -5,7 +5,7 @@ import { PermissionEntity } from 'src/modules/permissions/model/permission.entit
 import { RoleEntity } from 'src/modules/roles/model/role.entity';
 import { rolePermissions } from '../data/roles';
 import { ERoleType } from 'src/modules/roles/enums/role.enum';
-import { UserEntity } from 'src/modules/users/model/user.entity';
+import { UserEntity } from 'src/modules/users/model/users.entity';
 
 const users = [
   {
@@ -15,8 +15,8 @@ const users = [
     email: 'mosesmanek7@gmail.com',
     password: 'password',
     phoneNumber: ['+250722958263'],
-    role: ERoleType.ROLE_ADMIN,
-    profilePhoto: ['https://res.cloudinary.com/dfiagonwj/image/upload/v1731158593/users/fbgo7mfvmkjy4cxg1g4f.png']
+    role: ERoleType.ADMIN,
+    profilePhoto: 'https://res.cloudinary.com/dfiagonwj/image/upload/v1731158593/users/fbgo7mfvmkjy4cxg1g4f.png'
   }
 ]
 export default class CreateUsersSeed implements Seeder {

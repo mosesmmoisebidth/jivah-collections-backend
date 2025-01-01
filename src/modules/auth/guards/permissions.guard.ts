@@ -1,6 +1,6 @@
 import { Reflector } from '@nestjs/core';
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
-import { UserEntity } from 'src/modules/users/model/user.entity';
+import { UserEntity } from 'src/modules/users/model/users.entity';
 import { UserMapper } from 'src/modules/users/users.mapper';
 import { PERMISSIONS } from 'src/constants';
 

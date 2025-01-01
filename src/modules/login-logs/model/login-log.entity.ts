@@ -1,7 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, Relation } from 'typeorm';
 import { CommonEntity } from 'src/common/entities';
-import { UserEntity } from 'src/modules/users/model/user.entity';
-
+import { UserEntity } from 'src/modules/users/model/users.entity';
 @Entity({ schema: "users", name: 'login-logs' })
 export class LoginLogEntity extends CommonEntity {
   @Column({ nullable: true })

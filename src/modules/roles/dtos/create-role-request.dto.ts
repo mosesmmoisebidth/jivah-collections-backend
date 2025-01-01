@@ -4,7 +4,7 @@ import { ERoleType } from '../enums/role.enum';
 
 export class CreateRoleRequestDto {
   @ApiProperty({
-    example: ERoleType.ROLE_BUYER
+    example: ERoleType.USER
   })
   @IsNotEmpty()
   @MaxLength(50)

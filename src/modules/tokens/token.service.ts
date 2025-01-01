@@ -6,7 +6,7 @@ import { TokenEntity } from './model/token.entity';
 import { TokenRepository } from './model/token.repository';
 import { v4 } from 'uuid';
 import { ConfigKeyPaths } from 'src/config';
-import { UserEntity } from '../users/model/user.entity';
+import { UserEntity } from '../users/model/users.entity';
 import { JwtPayload } from '../auth/dto/jwt-payload.dto';
 import { BadRequestCustomException, InternalServerErrorCustomException, NotFoundCustomException } from 'src/common/http';
 import { RefreshTokenRequestDto } from './dto/refresh-token-request.dto';

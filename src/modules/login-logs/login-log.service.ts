@@ -12,7 +12,7 @@ import { PaginationRequest } from 'src/helpers/pagination';
 import { handlePaginate } from 'src/helpers/pagination/pagination.helper';
 import { TimeoutError } from 'rxjs';
 import { getLocation } from 'src/utils/ip.util';
-import { UserEntity } from '../users/model/user.entity';
+import { UserEntity } from '../users/model/users.entity';
 import { UserRequest } from 'src/types/request';
 import { LoginLogDto } from './dto/login-log.dto';
 import { ResponseService } from 'src/shared/response/response.service';
