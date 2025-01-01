@@ -5,7 +5,7 @@ import { Injectable } from '@nestjs/common';
 import * as admin from 'firebase-admin'
 import * as path from 'path';
 
-const serviceAccount = require('../../../serviceAccountsKey.json');
+const serviceAccount = require(path.resolve(process.cwd(), 'serviceAccountsKey.json'));
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
