@@ -31,7 +31,7 @@ export class UserMapper {
           'email', 'status', 'profilePhoto',
           'createdAt', 'updatedAt'
         ])
-        for(const key in dto){
+        for(const key in entity){
             if(!dtoKeys.has(key) && entityKeys.has(key)){
                 dto[key] = entity[key];
             }else{
