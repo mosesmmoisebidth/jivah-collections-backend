@@ -7,6 +7,7 @@ import {
     Get,
     Delete,
     Patch,
+    Post,
     Query
   } from '@nestjs/common';
   import { ApiOkPaginatedResponse, PaginationParams, PaginationRequest } from 'src/helpers/pagination';
@@ -30,11 +31,18 @@ import {
   import { ApiUnauthorizedCustomResponse } from 'src/common/decorators/api-unauthorized-custom-response.decorator';
   import { ApiForbiddenCustomResponse } from 'src/common/decorators/api-forbidden-custom-response.decorator';
   import { ApiConflictCustomResponse } from 'src/common/decorators/api-conflict-custom-response.decorator';
+  import { VerifyResetPasswordResponseDto } from './dto/verify-reset-password-response.dto';
+  import { VerifyPasswordResetOtpDTO } from './dto/verify-reset-password.dto';
   import { Permissions } from '../auth/decorators/permissions.decorator';
   import { CloudinaryService } from '../cloudinary/cloudinary.service';
+  import { ResetPasswordDTO } from './dto/reset-password.dto';
+  import { ChangePasswordRequestDto } from './dto';
+  import { CurrentUser } from '../auth/decorators';
   import { UploadedFiles } from '@nestjs/common';
   import { BadRequestCustomException } from 'src/common/http';
   import { UpdateUserDto } from './dto';
+  import { UserEntity } from './model/users.entity';
+  import { RequestResetPasswordDTO } from './dto/request-reset-password.dto';
   import { BadRequestException } from '@nestjs/common';
   import { FilesInterceptor } from '@nestjs/platform-express';
   import { UseInterceptors } from '@nestjs/common';
@@ -165,6 +173,47 @@ import {
       }catch(error){
         throw new BadRequestCustomException(`User failed to update, ${error.message}`);
       }
+
+      @ApiOperation({ description: 'Change password' })
+      @ApiOkCustomResponse(UserResponseDto)
+      @ApiUnauthorizedCustomResponse(NullDto)
+      @ApiBadRequestCustomResponse(NullDto)
+      @ApiBearerAuth(TOKEN_NAME)
+      @Post('/change/password')
+      changePassword(
+        @Body(ValidationPipe) changePassword: ChangePasswordRequestDto,
+        @CurrentUser() user: UserEntity,
+      ): Promise<ResponseDto<UserResponseDto>> {
+        return this.usersService.changePassword(changePassword, user.id);
+      }
+    
+      @ApiOperation({ description: 'Request reset password' })
+      @Post('/request/reset/password')
+      @Public()
+      requestResetPassword(
+        @Body(ValidationPipe) requestResetPasswordDto: RequestResetPasswordDTO,
+      ): Promise<ResponseDto<null>> {
+        return this.usersService.requestResetPassword(requestResetPasswordDto);
+      }
+    
+
+  @ApiOperation({ description: 'Verify reset password' })
+  @Post('/verify/reset/password')
+  @Public()
+  verifyResetPassword(
+    @Body(ValidationPipe) verifyPasswordResetOtpDto: VerifyPasswordResetOtpDTO,
+  ): Promise<ResponseDto<VerifyResetPasswordResponseDto>> {
+    return this.usersService.verifyResetPassword(verifyPasswordResetOtpDto);
+  }
+
+  @ApiOperation({ description: 'Change user password' })
+  @Post('/reset/password')
+  @Public()
+  resetPassword(
+    @Body(ValidationPipe) resetPassword: ResetPasswordDTO,
+  ): Promise<ResponseDto<null>> {
+    return this.usersService.resetPassword(resetPassword);
+  }
 
 
       @ApiOperation({ description: 'Delete user' })
