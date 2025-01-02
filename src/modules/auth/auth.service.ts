@@ -111,6 +111,7 @@ import {
         firstName: authRegisterDto.firstName,
         lastName: authRegisterDto.lastName,
         email: authRegisterDto.email,
+        password: authRegisterDto.password,
         role: ERoleType.USER
       });
       const roleEntity = await this.roleRepository.findOne({

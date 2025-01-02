@@ -9,7 +9,7 @@ export class HashHelper {
    * @returns Promise<string> Returns encrypted
    */
   public static async encrypt(str: string): Promise<string> {
-    return await bcrypt.hash(str, this.salt);
+    return await bcrypt.hash(str, HashHelper.salt);
   }
 
   /**

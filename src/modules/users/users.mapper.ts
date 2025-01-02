@@ -18,7 +18,6 @@ export class UserMapper {
     public static isValidValue(value: any): boolean {
         return value !== undefined && value !== null && value !== 'string;'
     }
-
     public static async toDtoPermRoles(
         entity: UserEntity,
         population: DtoPopulation = { roles: false, permissions: false }
@@ -26,8 +25,14 @@ export class UserMapper {
         const { roles, permissions } = population;
         const dto = new UserDto();
         const dtoKeys = new Set(['permissions', 'roles'])
+        const entityKeys = new Set([
+          'id', 'username',
+          'firstName', 'lastName',
+          'email', 'status', 'profilePhoto',
+          'createdAt', 'updatedAt'
+        ])
         for(const key in dto){
-            if(!dtoKeys.has(key) && !roles && !permissions){
+            if(!dtoKeys.has(key) && entityKeys.has(key)){
                 dto[key] = entity[key];
             }else{
                 if(permissions){
