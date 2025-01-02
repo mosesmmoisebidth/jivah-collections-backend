@@ -39,6 +39,8 @@ import {
   import { FirebaseService } from '../firebase/firebase.service';
   import { DecodedIdToken } from 'firebase-admin/lib/auth/token-verifier';
   import { RoleRepository } from '../roles/model/role.repository';
+  import * as path from 'path';
+  import { promises as fs } from 'fs';
   import { ERoleType } from '../roles/enums/role.enum';
   @Injectable({ scope: Scope.REQUEST })
   export class AuthService {
@@ -105,6 +107,17 @@ import {
       const userExists: UserEntity | false = await this.userRepository.findOne({
         where: [{ email }, { username }],
       });
+      const profilesFile = path.resolve(
+        process.cwd(),
+        'src',
+        'constants',
+        'profiles.json'
+      )
+      const profilePhotosJson = JSON.parse(
+        await fs.readFile(profilesFile, 'utf-8')
+      )
+      const profilePhotos = profilePhotosJson[0]?.images || [];
+      const randomProfilePhoto = profilePhotos[Math.floor(Math.random() * profilePhotos.length)];
       if(userExists) throw new ConflictCustomException(`User already exists use a new username`);
       const userEntity = this.userRepository.create({
         username: authRegisterDto.username,
@@ -112,6 +125,7 @@ import {
         lastName: authRegisterDto.lastName,
         email: authRegisterDto.email,
         password: authRegisterDto.password,
+        profilePhoto: randomProfilePhoto,
         role: ERoleType.USER
       });
       const roleEntity = await this.roleRepository.findOne({

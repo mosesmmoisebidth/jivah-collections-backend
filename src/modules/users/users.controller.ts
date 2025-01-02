@@ -75,11 +75,6 @@ import {
       type: 'boolean',
       required: false,
     })
-    @ApiQuery({
-      name: 'properties',
-      type: 'boolean',
-      required: false,
-    })
     @Permissions('read.users')
     @ApiOkPaginatedResponse(UserDto)
     @ApiUnauthorizedCustomResponse(NullDto)
@@ -95,7 +90,7 @@ import {
     @ApiOperation({ description: 'Get user by id' })
     @ApiOkCustomResponse(UserResponseDto)
     @Public()
-    @Get('/:id')
+    @Get('/user/:id')
     @ApiQuery({
       name: 'roles',
       type: 'boolean',
@@ -106,21 +101,15 @@ import {
       type: 'boolean',
       required: false,
     })
-    @ApiQuery({
-      name: 'properties',
-      type: 'boolean',
-      required: false,
-    })
     public getUserById(
       @Param('id', ParseUUIDPipe) id: string,
       @Query('roles') roles?: string,
       @Query('permissions') permissions?: string,
-      @Query('properties') properties?: string,
     ): Promise<ResponseDto<UserResponseDto>> {
-      return this.usersService.getUserById(id, { roles, permissions, properties });
+      return this.usersService.getUserById(id, { roles, permissions });
     }
 
-@ApiOperation({ description: 'Get profile' })
+  @ApiOperation({ description: 'Get profile' })
   @ApiOkCustomResponse(UserResponseDto)
   @Get('/get-profile')
   @ApiBearerAuth(TOKEN_NAME)
@@ -135,12 +124,12 @@ import {
       callback(null, true);
     }
 
-    @ApiOperation({ description: 'Update user by firebase based on id' })
+    @ApiOperation({ description: 'Update user based on id' })
     @ApiOkCustomResponse(UserResponseDto)
     @ApiConflictCustomResponse(NullDto)
     @ApiUnauthorizedCustomResponse(NullDto)
     @ApiBearerAuth(TOKEN_NAME)
-    @Patch('/:id')
+    @Patch('/update-user/:id')
     @UseInterceptors(
       FilesInterceptor('profileImage', 10, {
           fileFilter: UsersController.imageFileFilter,
