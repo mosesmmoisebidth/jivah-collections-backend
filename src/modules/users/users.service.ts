@@ -298,6 +298,7 @@ import { UserMapper } from './users.mapper';
           payload: null,
         });
       } catch (error) {
+        console.log("the error stack is: " + error.stack);
         throw new InternalServerErrorCustomException('Internal Server Error');
       }
     }
