@@ -37,7 +37,6 @@ async function bootstrap() {
         const logger = new Logger('NestApplication');
         logger.log(`[${prefix + pid}] Server running on ${url}`);
       });
-      console.log("finished loading...")
     } catch (error) {
       console.error('Error during app.listen:', error);
     }
