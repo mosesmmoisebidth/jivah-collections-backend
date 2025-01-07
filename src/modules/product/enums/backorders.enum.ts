@@ -1,0 +1,5 @@
+export enum EBackOrders {
+    DO_NOT_ALLOW='DO_NOT_ALLOW',
+    ALLOW_BUT_NOTIFY='ALLOW_BUT_NOTIFY',
+    ALLOW='ALLOW'
+}
