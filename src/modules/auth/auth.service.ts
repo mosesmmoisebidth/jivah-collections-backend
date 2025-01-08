@@ -67,7 +67,8 @@ import {
       ip: string,
       ua: string,
     ): Promise<ResponseDto<LoginResponseDto>> {
-      const { username, password } = authCredentialsRequestDto;
+      try{
+        const { username, password } = authCredentialsRequestDto;
       const user: UserEntity = await this.userRepository.findOne({ where: { username: username }})
       if (!user) throw new NotFoundCustomException('User not found');
       const passwordMatch = await user.validatePassword(password);
@@ -95,7 +96,10 @@ import {
         message: 'Logged in successfully',
         payload: { user: userDto, tokens },
       });
+    }catch(error){
+      console.log("the error:" + error.stack);
     }
+  }  
   
     public async register(
       authRegisterDto: AuthRegisterRequestDto,
