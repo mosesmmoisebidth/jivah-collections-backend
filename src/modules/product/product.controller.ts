@@ -25,9 +25,10 @@ import { CreateProductGeneralRequestDto } from './dtos/create-product-general.dt
 import { ApiUnauthorizedCustomResponse } from 'src/common/decorators/api-unauthorized-custom-response.decorator';
 import { ApiForbiddenCustomResponse } from 'src/common/decorators/api-forbidden-custom-response.decorator';
 import { ProductGeneralDto } from './dtos/product-general.dto';
-import { UpdateProductDto } from './dtos/update-product.dto';
 import { UpdateProductInventoryDto } from './dtos/update-product-inventory.dto';
 import { PairQuantityDto } from './dtos/pair-quantity.dto';
+import { UpdateProductDto } from './dtos/update-product.dto';
+import { UpdateProductRequestDto } from './dtos/update-product-request.dto';
 
 @Controller({
     path: 'products',
@@ -132,7 +133,7 @@ export class ProductController {
     @Patch('/product/inventory/:id')
     public updateProductInventory(
         @Param('id', ParseUUIDPipe) id: string,
-        @Body(ValidationPipe) dto: UpdateProductInventoryDto
+        @Body(ValidationPipe) dto: UpdateProductInventoryDto,
     ): Promise<ResponseDto<string>> {
         return this.productService.updateProductInventory(id, dto);
     }
@@ -143,11 +144,48 @@ export class ProductController {
     @ApiForbiddenCustomResponse(NullDto)
     @ApiBearerAuth(TOKEN_NAME)
     @Patch('/product/general/:id')
-    public updateProductGeneral(
+    @UseInterceptors(
+        FileFieldsInterceptor([
+            { name: 'product_image', maxCount: 1 },
+            { name: 'product_gallery', maxCount: 10 }
+        ], {
+            fileFilter: ProductController.imageFileFilter,
+            limits: { fileSize: 5 * 1024 * 1024 }
+        }
+    )
+    )
+    public async updateProductGeneral(
         @Param('id', ParseUUIDPipe) id: string,
-        @Body(ValidationPipe) dto: UpdateProductDto
+        @Body(ValidationPipe) dto: UpdateProductRequestDto,
+        @UploadedFiles() files: {
+            product_image?: Express.Multer.File[],
+            product_gallery?: Express.Multer.File[]
+        }
     ): Promise<ResponseDto<string>> {
-        return this.productService.updateProductGeneral(id, dto);
+        const fieldMappings = [
+            { field: 'product_image', folder: 'product_images', assignTo: 'uploaded_product_images', isArray: false },
+            { field: 'product_gallery', folder: 'product_galleries', assignTo: 'uploaded_product_galleries', isArray: true }
+        ]
+        const uploadedImages: Record<string, any> = {}
+        await Promise.all(
+            fieldMappings.map(async({ field, folder, assignTo, isArray }) => {
+                const fileData = files[field];
+                if(!fileData) return;
+                if(isArray){
+                    const results = await this.cloudinaryService.uploadFiles(fileData, folder);
+                    uploadedImages[assignTo] = results.map((result) => result.secure_url);
+                }else{
+                    const result = await this.cloudinaryService.uploadFileToCloudinary(fileData[0], folder);
+                    uploadedImages[assignTo] = result.secure_url;
+                }
+            })
+        )
+        const updateProductGeneralDto: UpdateProductDto = {
+            ...dto,
+            product_image: files?.product_image ? uploadedImages['uploaded_product_images'] : undefined,
+            product_gallery: files?.product_gallery ? uploadedImages['uploaded_product_galleries'] : undefined
+        }
+        return this.productService.updateProductGeneral(id, updateProductGeneralDto);
     }
 
     @ApiOperation({ description: 'Update product pair quantity' })

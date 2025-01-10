@@ -252,8 +252,7 @@ export class ProductService {
             }
             const updatedProduct = ProductMapper.toUpdateGeneralEntity(product, dto);
             const savedProduct = await this.productRepository.save(updatedProduct);
-            cachedProducts.push(savedProduct);
-            await this.cacheService.set(this.cacheKey, cachedProducts, this.cacheDuration);
+            await this.cacheService.update(this.cacheKey, savedProduct.id, savedProduct)
             return this.responseService.makeResponse({
                 message: `Product updated successfully`,
                 payload: null
