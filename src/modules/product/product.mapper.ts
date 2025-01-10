@@ -60,6 +60,7 @@ export class ProductMapper {
     ): ProductGeneralDto {
         const dto = new ProductGeneralDto();
         const dtoKeys = new Set([
+            'id', 'createdAt', 'updatedAt',
             'product_name', 'short_description',
             'product_description', 'regular_price',
             'sale_price', 'discount_price',
