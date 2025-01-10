@@ -4,6 +4,7 @@ import {
     Inject,
     Injectable,
     InternalServerErrorException,
+    RequestTimeoutException,
     Scope,
   } from '@nestjs/common';
   import { AuthCredentialsRequestDto } from './dto/auth-credentials-request.dto';
@@ -35,6 +36,7 @@ import {
   import { RefreshTokenRequestDto } from '../tokens/dto/refresh-token-request.dto';
   import { TokenResponseDto } from '../tokens/dto/token-response.dto';
   import { IFirebaseConfig } from 'src/config/firebase.config';
+  import { NotFoundException } from '@nestjs/common';
   import { TokenRepository } from '../tokens/model/token.repository';
   import { FirebaseService } from '../firebase/firebase.service';
   import { DecodedIdToken } from 'firebase-admin/lib/auth/token-verifier';
@@ -42,6 +44,7 @@ import {
   import * as path from 'path';
   import { promises as fs } from 'fs';
   import { ERoleType } from '../roles/enums/role.enum';
+import { TimeoutError } from 'rxjs';
   @Injectable({ scope: Scope.REQUEST })
   export class AuthService {
     constructor(
@@ -69,7 +72,7 @@ import {
     ): Promise<ResponseDto<LoginResponseDto>> {
       try{
         const { username, password } = authCredentialsRequestDto;
-      const user: UserEntity = await this.userRepository.findOne({ where: { username: username }})
+      const user: UserEntity = await this.userRepository.findUserByUsernameOrEmail(username);
       if (!user) throw new NotFoundCustomException('User not found');
       const passwordMatch = await user.validatePassword(password);
       if (!passwordMatch) {
@@ -97,7 +100,14 @@ import {
         payload: { user: userDto, tokens },
       });
     }catch(error){
-      console.log("the error:" + error.stack);
+      if(error instanceof NotFoundException){
+        throw new NotFoundException(`User not found`);
+      }
+      if(error instanceof TimeoutError){
+        throw new RequestTimeoutException(`Request timed out check out your internet connection`);
+      }else{
+        throw new InternalServerErrorCustomException(`An unknown error occured while connecting to our servers hold on!`)
+      }
     }
   }  
   

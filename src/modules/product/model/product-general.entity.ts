@@ -1,9 +1,10 @@
 import { CommonEntity } from "src/common/entities";
-import { Entity, Column, OneToOne } from 'typeorm';
+import { Entity, Column, ManyToMany, OneToOne } from 'typeorm';
 import { EProductCategory } from "../enums/product-category.enum";
-import { ShippingEntity } from "../shipping/model/shipping.entity";
-import { InventoryEntity } from "../inventory/model/inventory.entity";
-
+import { EProductStatus } from "../enums/roduct-status.enum";
+import { EProductQuantityStatus } from "../enums/product-status-quantity.enum";
+import { CartEntity } from "src/modules/cart/model/cart.entity";
+import { CartProductEntity } from "src/modules/cart/model/cart-product.entity";
 @Entity({ name: "product_general", schema: "products" })
 export class ProductGeneralEntity extends CommonEntity {
 
@@ -46,11 +47,34 @@ export class ProductGeneralEntity extends CommonEntity {
     @Column({ nullable: true, type: 'jsonb', default: ["None"] })
     tags: string[];
 
-    @OneToOne(() => ShippingEntity, (shipping) => shipping.product, { eager: true, cascade: true })
-    shipping: ShippingEntity;
+    @Column({ nullable: false, type: 'enum', enum: EProductQuantityStatus, default: EProductQuantityStatus.PAIR })
+    in_pair: EProductQuantityStatus;
 
-    @OneToOne(() => InventoryEntity, (inventory) => inventory.product, { eager: true, cascade: true })
-    inventory: InventoryEntity;
+    @Column({ nullable: false, default: 0 })
+    pair_quantity: number;
 
+    @Column({ nullable: false })
+    in_stock: boolean;
+
+    @Column({ nullable: true, default: "None" })
+    sku: string;
+
+    @Column({ nullable: true, default: "None" })
+    isbn: string;
+
+    @Column({ nullable: true, default: 0 })
+    quantity: number;
+
+    @Column({ nullable: true, default: 0 })
+    store_threshold: number;
+
+    @Column({ nullable: false, type: 'enum', enum: EProductStatus, default: EProductStatus.ON_SALE })
+    status: EProductStatus;
+
+    @OneToOne(() => CartProductEntity, (cartProduct) => cartProduct.product, { eager: true, cascade: true })
+    cartProduct: CartProductEntity;
+
+    @ManyToMany(() => CartEntity, (cart) => cart.products)
+    carts: CartEntity[]
 
 }

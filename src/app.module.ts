@@ -8,8 +8,11 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { RolesModule } from './modules/roles/roles.module';
+import { CachingModule } from './modules/caching/cache.module';
 import { PermissionsModule } from './modules/permissions/permissions.module';
 import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
+import { ProductModule } from './modules/product/product.module';
+import { CartModule } from './modules/cart/cart.module';
 import config from './config';
 
 @Module({
@@ -25,7 +28,10 @@ import config from './config';
     HealthModule,
     AuthModule,
     UsersModule,
+    CachingModule,
     CloudinaryModule,
+    ProductModule,
+    CartModule,
     RolesModule,
     PermissionsModule,
   ],

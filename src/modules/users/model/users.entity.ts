@@ -3,6 +3,7 @@ import {
     Column,
     Entity,
     OneToMany,
+    OneToOne,
     ManyToMany,
     JoinTable,
   } from 'typeorm';
@@ -13,6 +14,7 @@ import {
   import { PermissionEntity } from 'src/modules/permissions/model/permission.entity';
   import { UserStatus } from 'src/modules/auth/enums/user-status.enum';
   import { ERoleType } from 'src/modules/roles/enums/role.enum';
+  import { CartEntity } from 'src/modules/cart/model/cart.entity';
   @Entity({ schema: 'users', name: 'users' })
   export class UserEntity extends CommonEntity {
     
@@ -53,6 +55,9 @@ import {
   
     @OneToMany(() => TokenEntity, (token) => token.user)
     tokens: TokenEntity[];
+
+    @OneToOne(() => CartEntity, (cart) => cart.user)
+    cart: CartEntity;
   
     @ManyToMany(() => RoleEntity, (role) => role.users, { cascade: true })
     @JoinTable({

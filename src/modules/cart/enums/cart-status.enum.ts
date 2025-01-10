@@ -1,0 +1,5 @@
+export enum ECartStatus {
+    COMPLETED='COMPLETED',
+    PENDING='PENDING',
+    CANCELLED='CANCELLED'
+}

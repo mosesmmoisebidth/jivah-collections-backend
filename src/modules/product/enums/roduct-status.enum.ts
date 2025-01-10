@@ -1,0 +1,8 @@
+export enum EProductStatus {
+    ON_SALE='ON_SALE',
+    OFF_SALE='OFF_SALE',
+    IN_STOCK='IN_STOCK',
+    EXPIRED='EXPIRED',
+    DELETED='DELETED',
+    DISCOUNTED='DISCOUNTED'
+}
