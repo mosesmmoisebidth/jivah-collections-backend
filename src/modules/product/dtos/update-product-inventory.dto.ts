@@ -1,12 +1,14 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsString, IsOptional, IsNumber } from 'class-validator';
+import { IsString, IsOptional, IsNumber, IsBoolean } from 'class-validator';
+import { Transform } from 'class-transformer';
 export class UpdateProductInventoryDto {
 
     @ApiProperty({
         required: false
     })
     @IsOptional()
-    @IsString()
+    @Transform(({ value }) => value === 'true' || value === true)
+    @IsBoolean()
     in_stock?: boolean;
 
     @ApiProperty({
@@ -27,7 +29,8 @@ export class UpdateProductInventoryDto {
         required: false
     })
     @IsOptional()
-    @IsString()
+    @Transform(({ value }) => value === 'true' || value === true)
+    @IsBoolean()
     track_stock?: boolean;
 
     @ApiProperty({
