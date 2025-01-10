@@ -290,8 +290,8 @@ export class ProductService {
             if(!product){
                 throw new NotFoundException(`The product you are trying to add to the cart is not available it might have been bought or expired`);
             }
-            const all_products = await this.cacheService.get<ProductGeneralEntity[]>(this.cacheKey) || [];
-            const cachedProduct = all_products.find((product) => product.id === productId && this.statuses.includes(product.status));
+            // const all_products = await this.cacheService.get<ProductGeneralEntity[]>(this.cacheKey) || [];
+            // const cachedProduct = all_products.find((product) => product.id === productId && this.statuses.includes(product.status));
             if(!userEntity.cart){
                 const cart = await this.cartRepository.create({
                     product_count: 1,
@@ -324,11 +324,13 @@ export class ProductService {
                      }
                     : { status: EProductStatus.OFF_SALE, in_stock: false },
                 );
-                if(!cachedProduct){
+                const all_products = await this.cacheService.get<ProductGeneralEntity[]>(this.cacheKey) || []
+                const cachedProduct = all_products.find((product) => product.id === productId);
+                if(cachedProduct){
+                  await this.cacheService.update(this.cacheKey, product.id, product);
+                }else{
                   all_products.push(product)
                   await this.cacheService.set(this.cacheKey, all_products, this.cacheDuration);
-                }else{
-                  await this.cacheService.update(this.cacheKey, product.id, product);
                 }
                 return this.responseService.makeResponse({
                     message: `Product was added to the cart`,
@@ -366,11 +368,13 @@ export class ProductService {
                      }
                     : { status: EProductStatus.OFF_SALE, in_stock: false },
                 );
-                if(!cachedProduct){
-                  all_products.push(product);
-                  await this.cacheService.set(this.cacheKey, all_products, this.cacheDuration);
-                }else{
+                const all_products = await this.cacheService.get<ProductGeneralEntity[]>(this.cacheKey) || [];
+                const cachedProduct = all_products.find((product) => product.id === productId);
+                if(cachedProduct){
                   await this.cacheService.update(this.cacheKey, product.id, product);
+                }else{
+                  all_products.push(product)
+                  await this.cacheService.set(this.cacheKey, all_products, this.cacheDuration);
                 }
                 return this.responseService.makeResponse({
                     message: `Product was added to the cart`,
