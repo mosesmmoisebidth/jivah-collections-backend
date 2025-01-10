@@ -211,13 +211,13 @@ export class ProductService {
             }
             const updatedProduct = ProductMapper.toUpdateEntity(product, dto);
             const savedProduct = await this.productRepository.save(updatedProduct);
-            cachedProducts.push(savedProduct);
-            await this.cacheService.set(this.cacheKey, cachedProducts, this.cacheDuration);
+            await this.cacheService.update(this.cacheKey, savedProduct.id, savedProduct)
             return this.responseService.makeResponse({
                 message: `Product updated`,
                 payload: null
             })
         }catch(error){
+          console.log("the error stack is: " + error.stack);
             if (error.code == DBErrorCode.PgUniqueConstraintViolation) {
                 throw new ConflictCustomException('Your product has already been updated');
               }
