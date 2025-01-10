@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsString, IsNumber, IsEnum, IsOptional  } from 'class-validator';
+import { IsString, IsNumber, IsEnum, IsOptional, IsBoolean } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { EProductCategory } from "../enums/product-category.enum";
 
@@ -32,6 +32,7 @@ export class UpdateProductRequestDto {
             required: false,
         })
         @IsOptional()
+        @Transform(({ value }) => Number(value))
         @IsNumber()
         regular_price?: number;
     
@@ -39,6 +40,7 @@ export class UpdateProductRequestDto {
             required: false,
         })
         @IsOptional()
+        @Transform(({ value }) => Number(value))
         @IsNumber()
         sale_price?: number;
     
@@ -46,6 +48,7 @@ export class UpdateProductRequestDto {
             required: false,
         })
         @IsOptional()
+        @Transform(({ value }) => Number(value))
         @IsNumber()
         discount_price?: number;
     
@@ -71,14 +74,23 @@ export class UpdateProductRequestDto {
         @IsString()
         to_date?: string;
     
-        @ApiProperty()
+        @ApiProperty({
+            required: false,
+            type: 'string',
+            format: 'binary',
+            isArray: false
+        })
         @IsOptional()
-        product_image: string;
+        product_image?: Express.Multer.File;
     
-        @ApiProperty()
+        @ApiProperty({
+            required: false,
+            type: 'string',
+            format: 'binary',
+            isArray: true
+        })
         @IsOptional()
-        @Transform(({ value }) => Array.isArray(value) ? value : [value])
-        product_gallery: Express.Multer.File[];
+        product_gallery?: Express.Multer.File[];
     
         @ApiProperty()
         @IsOptional()
@@ -90,7 +102,8 @@ export class UpdateProductRequestDto {
             required: false
         })
         @IsOptional()
-        @IsString()
+        @Transform(({ value }) => value === 'true' || value === true)
+        @IsBoolean()
         in_stock?: boolean;
     
         @ApiProperty({
@@ -111,13 +124,15 @@ export class UpdateProductRequestDto {
             required: false
         })
         @IsOptional()
-        @IsString()
+        @Transform(({ value }) => value === 'true' || value === true)
+        @IsBoolean()
         track_stock?: boolean;
     
         @ApiProperty({
             required: false
         })
         @IsOptional()
+        @Transform(({ value }) => Number(value))
         @IsNumber()
         quantity?: number;
     
@@ -125,6 +140,7 @@ export class UpdateProductRequestDto {
             required: false
         })
         @IsOptional()
+        @Transform(({ value }) => Number(value))
         @IsNumber()
         store_threshold?: number;
 }
