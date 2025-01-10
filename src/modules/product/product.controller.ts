@@ -142,7 +142,6 @@ export class ProductController {
     @ApiOkCustomResponse(ResponseDto<string>)
     @ApiUnauthorizedCustomResponse(NullDto)
     @ApiForbiddenCustomResponse(NullDto)
-    @ApiBearerAuth(TOKEN_NAME)
     @Patch('/product/general/:id')
     @UseInterceptors(
         FileFieldsInterceptor([
@@ -154,6 +153,8 @@ export class ProductController {
         }
     )
     )
+    @ApiBearerAuth(TOKEN_NAME)
+    @ApiConsumes('multipart/form-data')
     public async updateProductGeneral(
         @Param('id', ParseUUIDPipe) id: string,
         @Body(ValidationPipe) dto: UpdateProductRequestDto,
