@@ -34,6 +34,7 @@ import { Logger } from "@nestjs/common";
 import { CartProductRepository } from "../cart/model/cart-product.repository";
 import { ECartStatus } from "../cart/enums/cart-status.enum";
 import { ViewCartResponseDto } from "./dtos/view-cart-response.dto";
+import { ProductGeneralDto } from "./dtos/product-general.dto";
 @Injectable({ scope: Scope.REQUEST })
 export class ProductService {
 
@@ -197,6 +198,34 @@ export class ProductService {
                 throw new InternalServerErrorCustomException(`An unknown error occured while connecting to the server hold on!`);
             }
         }
+    }
+
+    async getProductById(
+      productId: string
+    ): Promise<ResponseDto<ProductGeneralDto>> {
+      try{
+        const all_products = await this.cacheService.get<ProductGeneralEntity[]>(this.cacheKey) || [];
+        let product = all_products.find((product) => product.id === productId && this.statuses.includes(product.status))
+        if(!product){
+          product = await this.productRepository.findOne({
+            where: { id: productId, status: In(this.statuses) }
+          })
+        }
+        const productDto = ProductMapper.toDtoProduct(product);
+        return this.responseService.makeResponse({
+          message: `Product retrieved`,
+          payload: productDto
+        })
+      }catch(error){
+        if (error instanceof NotFoundException) {
+          throw new NotFoundException(`Seems like no current products in the shop`);
+        }
+      if(error instanceof TimeoutError){
+          throw new RequestTimeoutException(`Request timed out check your internet connection`);
+      }else{
+          throw new InternalServerErrorCustomException(`An unknown error occured while connecting to the server hold on!`);
+      }
+      }
     }
 
     async updateProductInventory(

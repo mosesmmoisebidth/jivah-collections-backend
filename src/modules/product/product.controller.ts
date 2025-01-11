@@ -72,6 +72,18 @@ export class ProductController {
         return this.productService.getAllProducts(pagination);
     }
 
+    @ApiOperation({ description: 'Get product by id' })
+    @ApiOkCustomResponse(ProductGeneralDto)
+    @ApiUnauthorizedCustomResponse(NullDto)
+    @ApiForbiddenCustomResponse(NullDto)
+    @ApiBearerAuth(TOKEN_NAME)
+    @Get('/product/:id')
+    async getProductById(
+        @Param('id', ParseUUIDPipe) id: string
+    ): Promise<ResponseDto<ProductGeneralDto>> {
+        return this.productService.getProductById(id);
+    }
+
     @ApiOperation({ description: 'Create a new product' })
     @ApiOkCustomResponse(ResponseDto<string>)
     @ApiForbiddenCustomResponse(NullDto)
