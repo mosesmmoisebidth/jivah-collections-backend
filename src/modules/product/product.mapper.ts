@@ -6,6 +6,10 @@ import { ProductGeneralDto } from "./dtos/product-general.dto";
 import { ViewCartDto } from "./dtos/view-cart.dto";
 import { PairQuantityDto } from "./dtos/pair-quantity.dto";
 import { EProductQuantityStatus } from "./enums/product-status-quantity.enum";
+import { CartEntity } from "../cart/model/cart.entity";
+import { CartProductEntity } from "../cart/model/cart-product.entity";
+import { CartProductDto } from "./dtos/product-cart.dto";
+
 export class ProductMapper {
     public static isValidValue(value: any): boolean {
         return value !== undefined && value !== null && value !== '' && !(typeof value === 'string' && (value.trim() === '' || value === 'string'));
@@ -78,20 +82,31 @@ export class ProductMapper {
         return dto;
     }
 
+    public static async toDtoCartProduct(
+        entity: CartProductEntity
+    ): Promise<CartProductDto> {
+        const dto = new CartProductDto();
+        const product = entity.product;
+        dto.id = product.id;
+        dto.createdAt = product.createdAt;
+        dto.updatedAt = product.updatedAt;
+        dto.product_image = product.product_image;
+        dto.product_name = product.product_name
+        dto.discount_price = product.discount_price > 0 ? product.discount_price : 0;
+        dto.sale_price = entity.price;
+        dto.quantity = entity.quantity;
+        return dto;
+    }
+
     public static async toDtoCart(
-        entity: ProductGeneralEntity
+        cart: CartEntity
     ): Promise<ViewCartDto> {
         const dto = new ViewCartDto();
-        const dtoKeys = new Set([
-            'product_image', 'product_name',
-            'sale_price', 'discount_price',
-            'in_stock'
-        ])
-        for(const [key, value] of Object.entries(entity)){
-            if(dtoKeys.has(key) && this.isValidValue(value)){
-                dto[key] = value;
-            }
-        }
+        dto.id = cart.id;
+        dto.createdAt = cart.createdAt;
+        dto.updatedAt = cart.updatedAt;
+        dto.sub_total = cart.sub_total;
+        dto.products = await Promise.all(cart.cartProducts.map((cartProduct) => this.toDtoCartProduct(cartProduct)))
         return dto;
     }
 

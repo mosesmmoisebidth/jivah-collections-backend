@@ -29,6 +29,8 @@ import { UpdateProductInventoryDto } from './dtos/update-product-inventory.dto';
 import { PairQuantityDto } from './dtos/pair-quantity.dto';
 import { UpdateProductDto } from './dtos/update-product.dto';
 import { UpdateProductRequestDto } from './dtos/update-product-request.dto';
+import { ViewCartDto } from './dtos/view-cart.dto';
+import { ViewCartResponseDto } from './dtos/view-cart-response.dto';
 
 @Controller({
     path: 'products',
@@ -233,9 +235,31 @@ export class ProductController {
     @ApiBearerAuth(TOKEN_NAME)
     @Patch('/product/update-cart-quantity/:id')
     public updateCartQuantity(
-        id: string
+        @Param('id', ParseUUIDPipe) id: string
     ): Promise<ResponseDto<string>> {
         return this.productService.updateCartQuantity(id);
+    }
+
+    @ApiOperation({ description: 'Add to cart' })
+    @ApiOkCustomResponse(ResponseDto<string>)
+    @ApiUnauthorizedCustomResponse(NullDto)
+    @ApiForbiddenCustomResponse(NullDto)
+    @ApiBearerAuth(TOKEN_NAME)
+    @Patch('/product/update-cart-quantity/:id')
+    public updateCartQuantityDecrease(
+        @Param('id', ParseUUIDPipe) id: string
+    ): Promise<ResponseDto<string>> {
+        return this.productService.updateCartQuantityDecrease(id);
+    }
+
+    @ApiOperation({ description: 'View cart' })
+    @ApiOkCustomResponse(ViewCartDto)
+    @ApiUnauthorizedCustomResponse(NullDto)
+    @ApiForbiddenCustomResponse(NullDto)
+    @ApiBearerAuth(TOKEN_NAME)
+    @Get('/product/view-cart/:id')
+    public viewCart(): Promise<ResponseDto<ViewCartResponseDto>> {
+        return this.productService.viewCart();
     }
 
 }

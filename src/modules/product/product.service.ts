@@ -33,6 +33,7 @@ import { UpdateProductDto } from "./dtos/update-product.dto";
 import { Logger } from "@nestjs/common";
 import { CartProductRepository } from "../cart/model/cart-product.repository";
 import { ECartStatus } from "../cart/enums/cart-status.enum";
+import { ViewCartResponseDto } from "./dtos/view-cart-response.dto";
 @Injectable({ scope: Scope.REQUEST })
 export class ProductService {
 
@@ -186,6 +187,7 @@ export class ProductService {
                 payload: paginatedResponse
             })
         }catch(error){
+          console.log("the error stack is: " + error.stack);
             if (error instanceof NotFoundException) {
                 throw new NotFoundException(`Seems like no current products in the shop`);
               }
@@ -563,6 +565,110 @@ export class ProductService {
           throw new RequestTimeoutException(`Request timed out check your internet connection`);
         } else {
           throw new InternalServerErrorException(`An unknown error occured while updating your job hold on!`);
+        }
+      }
+    }
+
+    async updateCartQuantityDecrease(
+      productId: string
+    ): Promise<ResponseDto<string>> {
+      try{
+        const userEntity = await this.userRepository.findOne({ where: { id: this.req.user.id, status: UserStatus.Active }, relations: ['cart.products']});
+        if(!userEntity){
+          throw new NotFoundException(`Your session might have ended login again to access the resource`);
+        }
+        const isProductExist = await userEntity.cart?.products.some((product) => product.id === productId)
+        if(!isProductExist){
+          throw new NotFoundException(`The product you requested was not found in your cart`);
+        }
+        const productDatabase = await this.productRepository.findOne({ where: { id: productId, status: In(this.statuses)}});
+        const product = await userEntity.cart?.products.find((product) => product.id === productId);
+        const userCart = await userEntity.cart;
+        const cartProduct = await userCart?.cartProducts.find((cart_product) => cart_product.productId === productId)
+        if(!cartProduct){
+          throw new NotFoundException(`The cart product you requested was not found in your cart`);
+        }
+        if(!cartProduct){
+          throw new NotFoundException(`Make sure the cart product you ar eupdating its already in the cart`);
+        }
+        cartProduct.quantity--;
+        cartProduct.price -= product.discount_price > 0 && product.discount_price ? product.discount_price : product.sale_price;
+        userCart.sub_total -= product.discount_price > 0 && product.discount_price ? product.discount_price : product.sale_price;
+        await this.cartProductRepository.save(cartProduct);
+        await this.productRepository.update(
+          productDatabase.id,
+          productDatabase.in_pair
+            ? !productDatabase.in_stock
+              ? { pair_quantity: Math.max(0, productDatabase.pair_quantity + 1) }
+              : { 
+                quantity: Math.max(0, productDatabase.quantity + 1),
+                ...(productDatabase.quantity + 1 > 0 && { in_stock: true }),
+               }
+            : productDatabase.in_stock
+            ? { 
+              quantity: Math.max(0, productDatabase.quantity - 1),
+              ...(productDatabase.quantity + 1 > 0 && { in_stock: true }),
+             }
+            : { status: EProductStatus.OFF_SALE, in_stock: false },
+        );
+        await this.cartRepository.save(userCart);
+        return this.responseService.makeResponse({
+          message: `Cart Product quantity updated`,
+          payload: null
+        })
+      }catch(error){
+        console.log("the error stack is: " + error.stack);
+        if (error.code == DBErrorCode.PgUniqueConstraintViolation) {
+          throw new ConflictCustomException('Your product has been updated');
+        }
+        if (
+          error.code == DBErrorCode.PgForeignKeyConstraintViolation ||
+          error.code == DBErrorCode.PgNotNullConstraintViolation
+        ) {
+          throw new BadRequestCustomException('Some fields are missing while updating your product');
+        }
+        if (error instanceof NotFoundException) {
+          throw new NotFoundException(`Your selected product might have been deleted`);
+        }
+        if (error instanceof TimeoutError) {
+          throw new RequestTimeoutException(`Request timed out check your internet connection`);
+        } else {
+          throw new InternalServerErrorException(`An unknown error occured while updating your job hold on!`);
+        }
+      }
+    }
+
+    async viewCart(): Promise<ResponseDto<ViewCartResponseDto>> {
+      try{
+        const userEntity = await this.userRepository.findOne({ where: { id: this.req.user.id, status: UserStatus.Active }, relations: ['cart', 'cart.products', 'cart.cartProducts.product']});
+        if(!userEntity){
+          throw new NotFoundException(`Your session might have ended login again to access the resource`);
+        }
+        if(!userEntity.cart){
+          return this.responseService.makeResponse({
+            message: `you have not yet added any product to your cart`,
+            payload: null
+          })
+        }
+        if(!userEntity.cart.products){
+          return this.responseService.makeResponse({
+            message: `Your cart is empty add any product`,
+            payload: { cart: null }
+          })
+        }
+        const cartDto = await ProductMapper.toDtoCart(userEntity.cart);
+        return this.responseService.makeResponse({
+          message: `Your cart products`,
+          payload: { cart: cartDto }
+        })
+      }catch(error){
+        if (error instanceof NotFoundException) {
+          throw new NotFoundException(`Seems like you dont have any cart products`);
+        }
+        if (error instanceof TimeoutError) {
+          throw new RequestTimeoutException(`Request timed out check your internet connection`);
+        } else {
+          throw new InternalServerErrorException(`An unknown error occured while getting your cart products`);
         }
       }
     }
