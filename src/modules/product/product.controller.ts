@@ -184,7 +184,7 @@ export class ProductController {
         const uploadedImages: Record<string, any> = {}
         await Promise.all(
             fieldMappings.map(async({ field, folder, assignTo, isArray }) => {
-                const fileData = files[field];
+                const fileData = files?.[field];
                 if(!fileData) return;
                 if(isArray){
                     const results = await this.cloudinaryService.uploadFiles(fileData, folder);
