@@ -64,7 +64,7 @@ export class ProductController {
     })
     @ApiForbiddenCustomResponse(NullDto)
     @ApiUnauthorizedCustomResponse(NullDto)
-    @ApiBearerAuth(TOKEN_NAME)
+    @Public()
     @Get('/all')
     public getAllProducts(
         @PaginationParams() pagination: PaginationRequest
