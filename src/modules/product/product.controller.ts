@@ -270,7 +270,7 @@ export class ProductController {
     @ApiUnauthorizedCustomResponse(NullDto)
     @ApiForbiddenCustomResponse(NullDto)
     @ApiBearerAuth(TOKEN_NAME)
-    @Get('/product/view-cart/')
+    @Get('/product/cart/view')
     public viewCart(): Promise<ResponseDto<ViewCartResponseDto>> {
         return this.productService.viewCart();
     }
