@@ -14,6 +14,7 @@ import { ApiQuery } from '@nestjs/swagger';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { Get, Post,Body, Patch } from '@nestjs/common';
 import { TOKEN_NAME } from 'src/constants';
+import { Public } from '../auth/decorators';
 import { ApiConsumes } from '@nestjs/swagger';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { UploadedFiles } from '@nestjs/common';
