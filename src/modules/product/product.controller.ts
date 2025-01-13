@@ -77,7 +77,7 @@ export class ProductController {
     @ApiOkCustomResponse(ProductGeneralDto)
     @ApiUnauthorizedCustomResponse(NullDto)
     @ApiForbiddenCustomResponse(NullDto)
-    @ApiBearerAuth(TOKEN_NAME)
+    @Public()
     @Get('/product/:id')
     async getProductById(
         @Param('id', ParseUUIDPipe) id: string
