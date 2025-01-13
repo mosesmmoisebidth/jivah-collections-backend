@@ -246,7 +246,7 @@ export class ProductController {
     @ApiUnauthorizedCustomResponse(NullDto)
     @ApiForbiddenCustomResponse(NullDto)
     @ApiBearerAuth(TOKEN_NAME)
-    @Patch('/product/update-cart-quantity/:id')
+    @Patch('/product/update-cart-quantity/increase/:id')
     public updateCartQuantity(
         @Param('id', ParseUUIDPipe) id: string
     ): Promise<ResponseDto<string>> {
@@ -258,7 +258,7 @@ export class ProductController {
     @ApiUnauthorizedCustomResponse(NullDto)
     @ApiForbiddenCustomResponse(NullDto)
     @ApiBearerAuth(TOKEN_NAME)
-    @Patch('/product/update-cart-quantity/:id')
+    @Patch('/product/update-cart-quantity/decrease/:id')
     public updateCartQuantityDecrease(
         @Param('id', ParseUUIDPipe) id: string
     ): Promise<ResponseDto<string>> {
