@@ -1,5 +1,5 @@
 import { CommonEntity } from "src/common/entities";
-import { Entity, Column, ManyToMany, OneToOne } from 'typeorm';
+import { Entity, Column, ManyToMany, OneToMany } from 'typeorm';
 import { EProductCategory } from "../enums/product-category.enum";
 import { EProductStatus } from "../enums/roduct-status.enum";
 import { EProductQuantityStatus } from "../enums/product-status-quantity.enum";
@@ -71,8 +71,8 @@ export class ProductGeneralEntity extends CommonEntity {
     @Column({ nullable: false, type: 'enum', enum: EProductStatus, default: EProductStatus.ON_SALE })
     status: EProductStatus;
 
-    @OneToOne(() => CartProductEntity, (cartProduct) => cartProduct.product, { eager: true, cascade: true })
-    cartProduct: CartProductEntity;
+    @OneToMany(() => CartProductEntity, (cartProduct) => cartProduct.product, { eager: true, cascade: true })
+    cartProducts: CartProductEntity[];
 
     @ManyToMany(() => CartEntity, (cart) => cart.products)
     carts: CartEntity[]

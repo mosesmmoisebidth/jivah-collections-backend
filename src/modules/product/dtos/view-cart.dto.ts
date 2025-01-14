@@ -9,4 +9,7 @@ export class ViewCartDto extends BaseDto {
     @ApiProperty()
     sub_total: number;
 
+    @ApiProperty()
+    product_count: number;
+
 }

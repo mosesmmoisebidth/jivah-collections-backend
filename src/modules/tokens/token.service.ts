@@ -55,7 +55,6 @@ export class TokensService {
       const foundToken = await this.tokenRepository.findOneBy({
         id: payload.tid,
         type: TokenType.RefreshToken,
-        isActive: true,
       });
       if (!foundToken || !foundToken.isActive)
         throw new NotFoundCustomException();
@@ -171,7 +170,6 @@ export class TokensService {
         throw new UnauthorizedCustomException(
           error.message == 'jwt malformed' ? 'Jwt Malformed!' : 'Jwt Expired!',
         );
-
       throw error;
     }
   }

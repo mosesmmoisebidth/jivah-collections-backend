@@ -1,5 +1,5 @@
 import { CommonEntity } from "src/common/entities";
-import { OneToOne, Entity, Column, JoinColumn, ManyToOne } from 'typeorm';
+import { Entity, Column, JoinColumn, ManyToOne } from 'typeorm';
 import { ECartStatus } from "../enums/cart-status.enum";
 import { CartEntity } from "./cart.entity";
 import { ProductGeneralEntity } from "src/modules/product/model/product-general.entity";
@@ -26,7 +26,7 @@ export class CartProductEntity extends CommonEntity {
     @JoinColumn({ name: "cartId" })
     cart: CartEntity;
 
-    @OneToOne(() => ProductGeneralEntity, (product) => product.cartProduct)
+    @ManyToOne(() => ProductGeneralEntity, (product) => product.cartProducts)
     @JoinColumn({ name: "productId" })
     product: ProductGeneralEntity;
 

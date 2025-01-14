@@ -91,9 +91,9 @@ export class ProductMapper {
         dto.createdAt = product.createdAt;
         dto.updatedAt = product.updatedAt;
         dto.product_image = product.product_image;
-        dto.product_name = product.product_name
+        dto.product_name = product.product_name;
         dto.discount_price = product.discount_price > 0 ? product.discount_price : 0;
-        dto.sale_price = entity.price;
+        dto.sale_price = entity.price > 0 ? entity.price : product.sale_price;
         dto.quantity = entity.quantity;
         return dto;
     }
@@ -106,6 +106,7 @@ export class ProductMapper {
         dto.createdAt = cart.createdAt;
         dto.updatedAt = cart.updatedAt;
         dto.sub_total = cart.sub_total;
+        dto.product_count = cart.product_count;
         dto.products = await Promise.all(cart.cartProducts.map((cartProduct) => this.toDtoCartProduct(cartProduct)))
         return dto;
     }

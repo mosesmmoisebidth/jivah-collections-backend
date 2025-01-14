@@ -233,14 +233,12 @@ export class ProductService {
         dto: UpdateProductInventoryDto
     ): Promise<ResponseDto<string>> {
         try{
-            const cachedProducts = await this.cacheService.get<ProductGeneralEntity[]>(this.cacheKey) || [];
-            let product = cachedProducts.find((p) => p.id === id && this.statuses.includes(p.status))
-            if(!product){
-                product = await this.productRepository.findOne({
-                    where: { id, status: In(this.statuses) }
-                })
-            }
+            const product = await this.productRepository.findOne({
+              where: { id, status: In(this.statuses) },
+              relations: ['cartProducts']
+            });
             const updatedProduct = ProductMapper.toUpdateEntity(product, dto);
+            updatedProduct.cartProducts = product.cartProducts;
             const savedProduct = await this.productRepository.save(updatedProduct);
             await this.cacheService.update(this.cacheKey, savedProduct.id, savedProduct)
             return this.responseService.makeResponse({
@@ -274,14 +272,12 @@ export class ProductService {
         dto: UpdateProductDto
     ): Promise<ResponseDto<string>> {
         try{
-            const cachedProducts = await this.cacheService.get<ProductGeneralEntity[]>(this.cacheKey) || [];
-            let product = cachedProducts.find((p) => p.id === id && this.statuses.includes(p.status))
-            if(!product){
-                product = await this.productRepository.findOne({
-                    where: { id, status: In(this.statuses) }
-                })
-            }
+            const product = await this.productRepository.findOne({
+              where: { id, status: In(this.statuses) },
+              relations: ['cartProducts']
+            })
             const updatedProduct = ProductMapper.toUpdateGeneralEntity(product, dto);
+            updatedProduct.cartProducts = product.cartProducts;
             const savedProduct = await this.productRepository.save(updatedProduct);
             await this.cacheService.update(this.cacheKey, savedProduct.id, savedProduct)
             return this.responseService.makeResponse({
@@ -335,7 +331,7 @@ export class ProductService {
                   cart_status: ECartStatus.PENDING,
                   productId: product.id,
                   quantity: 1,
-                  price: product.discount_price > 0 && product.discount_price ? product.discount_price : product.sale_price,
+                  price: product.sale_price > 0 && product.sale_price ? product.sale_price : product.regular_price,
                   cartId: savedCart.id
                 })
                 await this.cartProductRepository.save(cartProduct);
@@ -372,17 +368,22 @@ export class ProductService {
             const productAlreadyInCart = cartProducts.find((product) => product.id === productId && this.statuses.includes(product.status)); 
             if(!productAlreadyInCart){
                 const userCart = await userEntity.cart;
+                userCart.products.push(product);
+                userCart.product_count++;
+                userCart.sub_total = product.sale_price > 0 && product.sale_price ? 
+                product.sale_price + userCart.sub_total : 
+                (
+                  product.regular_price + userCart.sub_total || 
+                  (product.discount_price > 0 && product.discount_price ? product.discount_price + userCart.sub_total : userCart.sub_total)
+                );
+                const savedCart = await this.cartRepository.save(userCart);
                 const cartProduct = await this.cartProductRepository.create({
                   cart_status: ECartStatus.PENDING,
                   productId: product.id,
                   quantity: 1,
-                  cartId: userCart.id
+                  cartId: savedCart.id
                 })
-                const savedCartProduct = await this.cartProductRepository.save(cartProduct);
-                userCart.cartProducts.push(savedCartProduct);
-                userCart.product_count++;
-                userCart.sub_total = product.discount_price > 0 && product.discount_price ? product.discount_price + userCart.sub_total : product.sale_price + userCart.sub_total;
-                await this.cartRepository.save(userCart);
+                await this.cartProductRepository.save(cartProduct);
                 await this.productRepository.update(
                   product.id,
                   product.in_pair
@@ -402,7 +403,12 @@ export class ProductService {
                 const all_products = await this.cacheService.get<ProductGeneralEntity[]>(this.cacheKey) || [];
                 const cachedProduct = all_products.find((product) => product.id === productId);
                 if(cachedProduct){
+                  console.log("the product was found");
                   await this.cacheService.update(this.cacheKey, product.id, product);
+                  console.log("the product was updated");
+                  const updated_products = await this.cacheService.get<ProductGeneralEntity[]>(this.cacheKey);
+                  const updated_product = updated_products.find((product) => product.id === productId);
+                  console.log("the updated product is: " + JSON.stringify(updated_product));
                 }else{
                   all_products.push(product)
                   await this.cacheService.set(this.cacheKey, all_products, this.cacheDuration);
@@ -446,19 +452,20 @@ export class ProductService {
         if(!userEntity){
           throw new NotFoundException(`Your session might have ended login again to access this resource`);
         }
-        const productExists = await userEntity.cart?.products.some((product) => product.id === productId)
+        const productExists = await userEntity.cart?.products.some((product) => product.id === productId);
         if(!productExists){
-          throw new NotFoundException(`The product you selected is not among your cart products`);
+          throw new NotFoundException(`The product you selected might not be existing among your cart products add it to do this operation`);
+        }
+        const cartProduct = await userEntity.cart.cartProducts.find((cartProduct) => cartProduct.productId === productId);
+        if(!cartProduct){
+          throw new NotFoundException(`The product record for your cart was deleted from the cart add the product to cart to complete the purchase`);
         }
         const userCart = await userEntity.cart;
-        const cartProduct = await userCart.cartProducts.find((cartProduct) => cartProduct.productId === productId)
-        if(!cartProduct){
-          throw new NotFoundException(`The cartProduct you selected is not among your cart products`);
-        }
         const product = await this.productRepository.findOne({ where: { id: productId, status: In(this.statuses)}});
-        userEntity.cart.products = userEntity.cart.products.filter((product) => product.id !== productId);
-        userEntity.cart.product_count -= 1
-        userEntity.cart.sub_total -= product.discount_price > 0 && product.discount_price ? product.discount_price : product.sale_price;
+        userCart.products = userEntity.cart.products.filter((cart_product) => cart_product.id !== productId);
+        userCart.product_count -= 1
+        userCart.sub_total -= product.sale_price > 0 && product.sale_price ? product.sale_price : (product.regular_price || 0);
+        await this.cartRepository.save(userCart);
         await this.productRepository.update(
           product.id,
           product.in_pair
@@ -469,7 +476,7 @@ export class ProductService {
             ? { quantity: Math.max(0, product.quantity + cartProduct.quantity) }
             : { status: EProductStatus.ON_SALE },
         );
-        await this.userRepository.save(userEntity);
+        await this.cartProductRepository.remove(cartProduct);
         return this.responseService.makeResponse({
           message: `Removed product from your cart`,
           payload: null
@@ -539,7 +546,10 @@ export class ProductService {
         }
         const isProductExist = await userEntity.cart?.products.some((product) => product.id === productId)
         if(!isProductExist){
-          throw new NotFoundException(`The product you requested was not found in your cart`);
+          return this.responseService.makeResponse({
+            message: `The product you requested was not found in your cart`,
+            payload: null
+          })
         }
         const productDatabase = await this.productRepository.findOne({ where: { id: productId, status: In(this.statuses)}});
         const product = await userEntity.cart?.products.find((product) => product.id === productId);
@@ -548,12 +558,15 @@ export class ProductService {
         if(!cartProduct){
           throw new NotFoundException(`The cart product you requested was not found in your cart`);
         }
-        if(!cartProduct){
-          throw new NotFoundException(`Make sure the cart product you ar eupdating its already in the cart`);
-        }
         cartProduct.quantity++;
-        cartProduct.price += product.discount_price > 0 && product.discount_price ? product.discount_price : product.sale_price;
-        userCart.sub_total += product.discount_price > 0 && product.discount_price ? product.discount_price : product.sale_price;
+        cartProduct.price += product.sale_price > 0 && product.sale_price ? 
+        product.sale_price : (
+          product.regular_price > 0 && product.regular_price ? product.regular_price : 0
+        );
+        userCart.sub_total += product.sale_price > 0 && product.sale_price ? 
+        product.sale_price : (
+          product.regular_price > 0 && product.regular_price ? product.regular_price : 0
+        );
         await this.cartProductRepository.save(cartProduct);
         await this.productRepository.update(
           productDatabase.id,
@@ -685,6 +698,8 @@ export class ProductService {
             payload: { cart: null }
           })
         }
+        const products = await userEntity.cart?.products || [];
+        console.log("the number of products in the cart are: " + products.length)
         const cartDto = await ProductMapper.toDtoCart(userEntity.cart);
         return this.responseService.makeResponse({
           message: `Your cart products`,
