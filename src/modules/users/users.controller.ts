@@ -46,8 +46,12 @@ import {
   import { BadRequestException } from '@nestjs/common';
   import { FilesInterceptor } from '@nestjs/platform-express';
   import { UseInterceptors } from '@nestjs/common';
+  import { AddPermissionsToUser } from './dto/add-permissions.dto';
+  import { CreateUserDto } from './dto/create-user.dto';
   import { UpdateUserRequestDto } from './dto/update-user-request.dto';
   import { Public } from '../auth/decorators';
+import { CreatedUserDto } from './dto/created-user.dto';
+import { RemovePermissionsFromUserDto } from './dto/remove-permissions.dto';
   @ApiTags('Users')
   @Controller({
     path: 'users',
@@ -93,6 +97,18 @@ import {
       @PaginationParams() pagination: PaginationRequest,
     ): Promise<ResponseDto<PaginationResponseDto<UserDto>>> {
       return this.usersService.getUsers(pagination);
+    }
+
+    @ApiOperation({ description: 'Create user' })
+    @ApiOkCustomResponse(CreatedUserDto)
+    @ApiUnauthorizedCustomResponse(NullDto)
+    @ApiForbiddenCustomResponse(NullDto)
+    @ApiBearerAuth(TOKEN_NAME)
+    @Post('/create/user')
+    public createUser(
+      dto: CreateUserDto
+    ): Promise<ResponseDto<CreatedUserDto>> {
+      return this.usersService.createUser(dto);
     }
   
     @ApiOperation({ description: 'Get user by id' })
@@ -173,6 +189,34 @@ import {
       }catch(error){
         throw new BadRequestCustomException(`User failed to update, ${error.message}`);
       }
+
+      @ApiOperation({ description: 'Add permissions to user' })
+      @ApiOkCustomResponse(ResponseDto<string>)
+      @ApiUnauthorizedCustomResponse(NullDto)
+      @ApiForbiddenCustomResponse(NullDto)
+      @ApiBearerAuth(TOKEN_NAME)
+      @Patch('/permissions/add/:id')
+      async addPermissionsToUser(
+        @Param('id') id: string,
+        @Body(ValidationPipe) addPermissionsToUser: AddPermissionsToUser
+      ): Promise<ResponseDto<UserResponseDto>> {
+        return this.usersService.addPermissions(id, addPermissionsToUser);
+      }
+
+
+      @ApiOperation({ description: 'remove permissions from user' })
+      @ApiOkCustomResponse(ResponseDto<string>)
+      @ApiUnauthorizedCustomResponse(NullDto)
+      @ApiForbiddenCustomResponse(NullDto)
+      @ApiBearerAuth(TOKEN_NAME)
+      @Patch('/permissions/remove/:id')
+      async removePermissionsFromUser(
+        @Param('id') id: string,
+        @Body(ValidationPipe) removePermissionsFromUser: RemovePermissionsFromUserDto
+      ): Promise<ResponseDto<UserResponseDto>> {
+        return this.usersService.removePermissions(id, removePermissionsFromUser);
+      }
+
 
       @ApiOperation({ description: 'Change password' })
       @ApiOkCustomResponse(UserResponseDto)

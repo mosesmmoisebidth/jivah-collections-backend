@@ -29,18 +29,30 @@ import {
   import { VerifyResetPasswordResponseDto } from './dto/verify-reset-password-response.dto';
   import { UserDto } from './dto/user-dto';
   import { UserRequest } from 'src/types/request';
+  import { CreateUserDto } from './dto/create-user.dto';
   import { REQUEST } from '@nestjs/core';
+  import { CustomException } from 'src/common/http/exceptions/custom.exception';
+  import { CreatedUserDto } from './dto/created-user.dto';
   import { isTrueOrFalse } from 'src/utils/boolean.util';
   import { UserEntity } from './model/users.entity';
+  import * as crypto from 'crypto';
+  import { registerUserTemplate } from 'src/templates/auth/register-user.template';
   import { UserStatus } from '../auth/enums/user-status.enum';
   import { UpdateUserDto } from './dto';
+  import * as path from 'path';
+  import { RoleRepository } from '../roles/model/role.repository';
+  import { promises as fs } from 'fs';
 import { UserMapper } from './users.mapper';
+import { ERoleType } from '../roles/enums/role.enum';
+import { AddPermissionsToUser } from './dto/add-permissions.dto';
+import { RemovePermissionsFromUserDto } from './dto/remove-permissions.dto';
   @Injectable({ scope: Scope.REQUEST })
   export class UsersService {
     constructor(
       @Inject(REQUEST) private req: UserRequest,
       private readonly userRepository: UserRepository,
       private readonly otpService: OTPService,
+      private readonly roleRepository: RoleRepository,
       private readonly resetPasswordService: ResetPasswordService,
       private readonly mailService: MailerService,
       private readonly responseService: ResponseService,
@@ -139,6 +151,91 @@ import { UserMapper } from './users.mapper';
           throw new RequestTimeoutException();
         } else {
           throw new InternalServerErrorException();
+        }
+      }
+    }
+
+    private static generatePassword(length = 12): string {
+      return crypto.randomBytes(length).toString("hex").slice(0, length);
+   }
+    public async createUser(
+      dto: CreateUserDto
+    ): Promise<ResponseDto<CreatedUserDto>> {
+      try{
+        const { email, username } = dto;
+        const userExists = await this.userRepository.findOne({
+          where: [{ username }, { email }],
+        });
+        if(!userExists){
+          return this.responseService.makeResponse({
+            message: `User already exists`,
+            payload: null
+          })
+        }
+        const profilesFile = path.resolve(
+                process.cwd(),
+                'src',
+                'constants',
+                'profiles.json'
+              )
+              const profilePhotosJson = JSON.parse(
+                await fs.readFile(profilesFile, 'utf-8')
+              )
+              const profilePhotos = profilePhotosJson[0]?.images || [];
+              const randomProfilePhoto = profilePhotos[Math.floor(Math.random() * profilePhotos.length)];
+        const tempPassword = UsersService.generatePassword();
+        const RESET_LINK = "http://jivah-collections-backend.onrender.com/swagger"
+        const userEntity = await this.userRepository.create({
+          email,
+          username,
+          firstName: dto.firstName,
+          lastName: dto.lastName,
+          password: tempPassword,
+          role: ERoleType.USER,
+          profilePhoto: randomProfilePhoto
+        });
+        const roleEntity = await this.roleRepository.findOne({
+          where: { name: ERoleType.USER },
+          relations: ['permissions']
+        });
+        userEntity.roles = Promise.resolve([roleEntity]);
+        userEntity.permissions = Promise.resolve([]);
+        const savedUser = await this.userRepository.save(userEntity);
+        const createdUser = new CreatedUserDto();
+        createdUser.id = savedUser.id;
+        createdUser.username = savedUser.username;
+        createdUser.email = savedUser.email;
+        createdUser.createdAt = savedUser.createdAt;
+        createdUser.updatedAt = savedUser.updatedAt;
+        await this.mailService.sendEMail({
+          body: registerUserTemplate({
+            firstName: dto.firstName,
+            username,
+            password: tempPassword,
+            resetLink: RESET_LINK
+          }),
+          subject: `User Registration`,
+          to: savedUser.email
+        })
+        return this.responseService.makeResponse({
+          message: `User created successfully`,
+          payload: createdUser
+        })
+      }catch(error){
+        console.log("the error stack is: " + error.stack);
+        if (error.code == DBErrorCode.PgUniqueConstraintViolation) {
+          throw new ConflictCustomException('User already exists');
+        }
+        if (
+          error.code == DBErrorCode.PgForeignKeyConstraintViolation ||
+          error.code == DBErrorCode.PgNotNullConstraintViolation
+        ) {
+          throw new BadRequestCustomException('Bad Request ensure you are authorized to use this API');
+        }
+        if (error instanceof TimeoutError) {
+          throw new RequestTimeoutException(`Check your internet connection or th eproxy`);
+        } else {
+          throw new InternalServerErrorException(`An unknown error occured while updatig our systems check on your side`);
         }
       }
     }
@@ -411,5 +508,74 @@ import { UserMapper } from './users.mapper';
         }
       }
     }
+
+    public async addPermissions(
+      id: string,
+      addPermissionDto: AddPermissionsToUser
+   ): Promise<ResponseDto<UserResponseDto>> {
+      try {
+         const userEntity = await this.userRepository.findOneBy({
+            id,
+            status: UserStatus.Active
+         });
+
+         if (!userEntity) throw new NotFoundException();
+
+         const permissionIds = (await userEntity.permissions).map((permission) => permission.id);
+
+         const validPermissions = addPermissionDto.permissions.filter(
+            (permission) => !permissionIds.includes(permission)
+         );
+
+         if (validPermissions.length === 0) {
+            throw new BadRequestCustomException(`Role ${id} already has the permissions`);
+         }
+
+         await UserMapper.addPermissions(userEntity, addPermissionDto.permissions);
+
+         const updatedUserEntity = await this.userRepository.findOneBy({ id });
+
+         const user = await UserMapper.toDtoPermRoles(updatedUserEntity, {
+            permissions: true,
+            roles: true
+         });
+
+         return this.responseService.makeResponse({
+            message: "User updated successfully",
+            payload: { user }
+         });
+      } catch (error) {
+         throw new CustomException(error);
+      }
+   }
+
+   public async removePermissions(
+    id: string,
+    removeRolesDto: RemovePermissionsFromUserDto
+ ): Promise<ResponseDto<UserResponseDto>> {
+    const userEntity = await this.userRepository.findOne({
+      where: {
+        id,
+       status: UserStatus.Active,
+      },
+      relations: ['permissions', 'roles']
+    });
+    if (!userEntity) throw new NotFoundException();
+    try {
+       await UserMapper.removePermissions(userEntity, removeRolesDto.permissions);
+       const updatedUserEntity = await this.userRepository.findOneBy({ id });
+       const user = await UserMapper.toDtoPermRoles(updatedUserEntity, {
+          roles: true,
+          permissions: true
+       });
+       return this.responseService.makeResponse({
+          message: "User updated successfully",
+          payload: { user }
+       });
+    } catch (error) {
+       throw new CustomException(error);
+    }
+ }
+
   }
   

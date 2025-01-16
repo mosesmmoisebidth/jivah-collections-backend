@@ -320,9 +320,12 @@ export class ProductService {
             // const all_products = await this.cacheService.get<ProductGeneralEntity[]>(this.cacheKey) || [];
             // const cachedProduct = all_products.find((product) => product.id === productId && this.statuses.includes(product.status));
             if(!userEntity.cart){
+              console.log()
                 const cart = await this.cartRepository.create({
                     product_count: 1,
-                    sub_total: product.discount_price > 0 && product.discount_price ? product.discount_price : product.sale_price,
+                    sub_total: product.sale_price > 0 && product.sale_price ? product.sale_price : (
+                      product.regular_price > 0 && product.regular_price ? product.regular_price : 0
+                    ),
                     userId: userEntity.id,
                     products: [product]
                 })
@@ -334,6 +337,7 @@ export class ProductService {
                   price: product.sale_price > 0 && product.sale_price ? product.sale_price : product.regular_price,
                   cartId: savedCart.id
                 })
+
                 await this.cartProductRepository.save(cartProduct);
                 await this.productRepository.update(
                   product.id,
@@ -369,19 +373,20 @@ export class ProductService {
             if(!productAlreadyInCart){
                 const userCart = await userEntity.cart;
                 userCart.products.push(product);
-                userCart.product_count++;
+                userCart.product_count = userCart.products.length;
+                console.log("the userCart initially is: " + userCart.sub_total);
                 userCart.sub_total = product.sale_price > 0 && product.sale_price ? 
                 product.sale_price + userCart.sub_total : 
                 (
-                  product.regular_price + userCart.sub_total || 
-                  (product.discount_price > 0 && product.discount_price ? product.discount_price + userCart.sub_total : userCart.sub_total)
+                  product.regular_price > 0 && product.regular_price ? product.regular_price + userCart.sub_total : userCart.sub_total + 0
                 );
                 const savedCart = await this.cartRepository.save(userCart);
                 const cartProduct = await this.cartProductRepository.create({
                   cart_status: ECartStatus.PENDING,
                   productId: product.id,
                   quantity: 1,
-                  cartId: savedCart.id
+                  cartId: savedCart.id,
+                  price: product.sale_price > 0 && product.sale_price ? product.sale_price : (product.regular_price || 0)
                 })
                 await this.cartProductRepository.save(cartProduct);
                 await this.productRepository.update(
@@ -463,8 +468,8 @@ export class ProductService {
         const userCart = await userEntity.cart;
         const product = await this.productRepository.findOne({ where: { id: productId, status: In(this.statuses)}});
         userCart.products = userEntity.cart.products.filter((cart_product) => cart_product.id !== productId);
-        userCart.product_count -= 1
-        userCart.sub_total -= product.sale_price > 0 && product.sale_price ? product.sale_price : (product.regular_price || 0);
+        userCart.product_count = userCart.products.length;
+        userCart.sub_total -= cartProduct.price;
         await this.cartRepository.save(userCart);
         await this.productRepository.update(
           product.id,
@@ -559,10 +564,12 @@ export class ProductService {
           throw new NotFoundException(`The cart product you requested was not found in your cart`);
         }
         cartProduct.quantity++;
+        console.log("the cartProduct prioce before is: " + cartProduct.price);
         cartProduct.price += product.sale_price > 0 && product.sale_price ? 
         product.sale_price : (
           product.regular_price > 0 && product.regular_price ? product.regular_price : 0
         );
+        console.log("the price of the cartProduct is: " + cartProduct.price)
         userCart.sub_total += product.sale_price > 0 && product.sale_price ? 
         product.sale_price : (
           product.regular_price > 0 && product.regular_price ? product.regular_price : 0
@@ -634,8 +641,8 @@ export class ProductService {
           throw new NotFoundException(`Make sure the cart product you ar eupdating its already in the cart`);
         }
         cartProduct.quantity--;
-        cartProduct.price -= product.discount_price > 0 && product.discount_price ? product.discount_price : product.sale_price;
-        userCart.sub_total -= product.discount_price > 0 && product.discount_price ? product.discount_price : product.sale_price;
+        cartProduct.price -= product.sale_price > 0 && product.sale_price ? product.sale_price : product.regular_price;
+        userCart.sub_total -= product.sale_price > 0 && product.sale_price ? product.sale_price : product.regular_price;
         await this.cartProductRepository.save(cartProduct);
         await this.productRepository.update(
           productDatabase.id,

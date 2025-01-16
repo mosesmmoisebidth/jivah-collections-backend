@@ -93,7 +93,7 @@ export class ProductMapper {
         dto.product_image = product.product_image;
         dto.product_name = product.product_name;
         dto.discount_price = product.discount_price > 0 ? product.discount_price : 0;
-        dto.sale_price = entity.price > 0 ? entity.price : product.sale_price;
+        dto.sale_price = entity.price;
         dto.quantity = entity.quantity;
         return dto;
     }
