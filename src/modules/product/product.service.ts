@@ -594,6 +594,7 @@ export class ProductService {
           product.regular_price > 0 && product.regular_price ? product.regular_price : 0
         );
         await this.cartProductRepository.save(cartProduct);
+        await this.cartRepository.save(userCart);
         await this.productRepository.update(
           productDatabase.id,
           productDatabase.in_pair
@@ -610,7 +611,6 @@ export class ProductService {
              }
             : { status: EProductStatus.OFF_SALE, in_stock: false },
         );
-        await this.cartRepository.save(userCart);
         const updatedProduct = await this.productRepository.findOne({ where: { id: productId, status: In(this.statuses) }});
         const all_products = await this.cacheService.get<ProductGeneralEntity[]>(this.cacheKey);
         const final_product = all_products.find((product) => product.id === productId && this.statuses.includes(product.status));
@@ -674,6 +674,7 @@ export class ProductService {
         cartProduct.price -= product.sale_price > 0 && product.sale_price ? product.sale_price : product.regular_price;
         userCart.sub_total -= product.sale_price > 0 && product.sale_price ? product.sale_price : product.regular_price;
         await this.cartProductRepository.save(cartProduct);
+        await this.cartRepository.save(userCart);
         await this.productRepository.update(
           productDatabase.id,
           productDatabase.in_pair
@@ -690,7 +691,6 @@ export class ProductService {
              }
             : { status: EProductStatus.OFF_SALE, in_stock: false },
         );
-        await this.cartRepository.save(userCart);
         const updatedProduct = await this.productRepository.findOne({ where: { id: productId, status: In(this.statuses) }});
         const all_products = await this.cacheService.get<ProductGeneralEntity[]>(this.cacheKey);
         const final_product = all_products.find((product) => product.id === productId && this.statuses.includes(product.status));
