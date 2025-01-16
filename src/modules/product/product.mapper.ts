@@ -7,6 +7,7 @@ import { ViewCartDto } from "./dtos/view-cart.dto";
 import { PairQuantityDto } from "./dtos/pair-quantity.dto";
 import { EProductQuantityStatus } from "./enums/product-status-quantity.enum";
 import { CartEntity } from "../cart/model/cart.entity";
+import { ProductOperation } from "./dtos/product-operation.dto";
 import { CartProductEntity } from "../cart/model/cart-product.entity";
 import { CartProductDto } from "./dtos/product-cart.dto";
 
@@ -126,5 +127,23 @@ export class ProductMapper {
             }
         }
         return entity;
+    }
+
+    public static toProductOperation(
+        entity: ProductGeneralEntity
+    ): ProductOperation {
+        const dto = new ProductOperation();
+        const productKeys = new Set([
+            'id', 'createdAt', 'updatedAt',
+            'product_name', 'product_description',
+            'sale_price', 'quantity',
+            'discount_price', 'in_stock'
+        ])
+        for(const [key, value] of Object.entries(entity)){
+            if(productKeys.has(key) && this.isValidValue(value)){
+                dto[key] = value;
+            }
+        }
+        return dto;
     }
 }

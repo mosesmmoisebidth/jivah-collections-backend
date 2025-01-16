@@ -31,6 +31,7 @@ import { PairQuantityDto } from './dtos/pair-quantity.dto';
 import { UpdateProductDto } from './dtos/update-product.dto';
 import { UpdateProductRequestDto } from './dtos/update-product-request.dto';
 import { ViewCartDto } from './dtos/view-cart.dto';
+import { ProductOperationResponseDto } from './dtos/product-operation-response.dto';
 import { ViewCartResponseDto } from './dtos/view-cart-response.dto';
 
 @Controller({
@@ -149,7 +150,7 @@ export class ProductController {
     public updateProductInventory(
         @Param('id', ParseUUIDPipe) id: string,
         @Body(ValidationPipe) dto: UpdateProductInventoryDto,
-    ): Promise<ResponseDto<string>> {
+    ): Promise<ResponseDto<ProductOperationResponseDto>> {
         return this.productService.updateProductInventory(id, dto);
     }
 
@@ -177,7 +178,7 @@ export class ProductController {
             product_image?: Express.Multer.File[],
             product_gallery?: Express.Multer.File[]
         }
-    ): Promise<ResponseDto<string>> {
+    ): Promise<ResponseDto<ProductOperationResponseDto>> {
         const fieldMappings = [
             { field: 'product_image', folder: 'product_images', assignTo: 'uploaded_product_images', isArray: false },
             { field: 'product_gallery', folder: 'product_galleries', assignTo: 'uploaded_product_galleries', isArray: true }
@@ -225,7 +226,7 @@ export class ProductController {
     @Patch('/product/add-cart/:id')
     public addToCart(
         @Param('id', ParseUUIDPipe) id: string,
-    ): Promise<ResponseDto<string>> {
+    ): Promise<ResponseDto<ProductOperationResponseDto>> {
         return this.productService.addToCart(id);
     }
 

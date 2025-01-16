@@ -35,6 +35,7 @@ import { CartProductRepository } from "../cart/model/cart-product.repository";
 import { ECartStatus } from "../cart/enums/cart-status.enum";
 import { ViewCartResponseDto } from "./dtos/view-cart-response.dto";
 import { ProductGeneralDto } from "./dtos/product-general.dto";
+import { ProductOperationResponseDto } from "./dtos/product-operation-response.dto";
 @Injectable({ scope: Scope.REQUEST })
 export class ProductService {
 
@@ -175,8 +176,8 @@ export class ProductService {
             search = pagination.params?.search ?? '',
             category = (pagination.params?.category && this.validateEnumType(pagination.params?.category, EProductCategory, 'product category', this.logger)) ?? '',
           } = pagination.params || {};
-            let all_products = await this.cacheService.get<ProductGeneralEntity[]>(this.cacheKey)
-            if(!all_products){
+            let all_products = await this.cacheService.get<ProductGeneralEntity[]>(this.cacheKey) || []
+            if(!all_products || all_products.length === 0){
                 all_products = await this.productRepository.find({ where: { status: In(this.statuses)}})
                 await this.cacheService.set(this.cacheKey, all_products, this.cacheDuration);
             }
@@ -231,7 +232,7 @@ export class ProductService {
     async updateProductInventory(
         id: string,
         dto: UpdateProductInventoryDto
-    ): Promise<ResponseDto<string>> {
+    ): Promise<ResponseDto<ProductOperationResponseDto>> {
         try{
             const product = await this.productRepository.findOne({
               where: { id, status: In(this.statuses) },
@@ -243,7 +244,7 @@ export class ProductService {
             await this.cacheService.update(this.cacheKey, savedProduct.id, savedProduct)
             return this.responseService.makeResponse({
                 message: `Product updated`,
-                payload: null
+                payload: { product: ProductMapper.toProductOperation(savedProduct) }
             })
         }catch(error){
           console.log("the error stack is: " + error.stack);
@@ -270,7 +271,7 @@ export class ProductService {
     async updateProductGeneral(
         id: string,
         dto: UpdateProductDto
-    ): Promise<ResponseDto<string>> {
+    ): Promise<ResponseDto<ProductOperationResponseDto>> {
         try{
             const product = await this.productRepository.findOne({
               where: { id, status: In(this.statuses) },
@@ -282,7 +283,7 @@ export class ProductService {
             await this.cacheService.update(this.cacheKey, savedProduct.id, savedProduct)
             return this.responseService.makeResponse({
                 message: `Product updated successfully`,
-                payload: null
+                payload:  {product: ProductMapper.toProductOperation(savedProduct) }
             })
         }catch(error){
             if (error.code == DBErrorCode.PgUniqueConstraintViolation) {
@@ -307,7 +308,7 @@ export class ProductService {
 
     async addToCart(
         productId: string
-    ): Promise<ResponseDto<string>> {
+    ): Promise<ResponseDto<ProductOperationResponseDto>> {
         try{
             const userEntity = await this.userRepository.findOne({ where: { id: this.req.user.id, status: UserStatus.Active }, relations: ['cart', 'cart.products', 'cart.cartProducts']});
             if(!userEntity){
@@ -355,17 +356,20 @@ export class ProductService {
                      }
                     : { status: EProductStatus.OFF_SALE, in_stock: false },
                 );
+                const updatedProduct = await this.productRepository.findOne({ 
+                  where: { id: productId, status: In(this.statuses) }
+                })
                 const all_products = await this.cacheService.get<ProductGeneralEntity[]>(this.cacheKey) || []
                 const cachedProduct = all_products.find((product) => product.id === productId);
                 if(cachedProduct){
-                  await this.cacheService.update(this.cacheKey, product.id, product);
+                  await this.cacheService.update(this.cacheKey, product.id, updatedProduct);
                 }else{
                   all_products.push(product)
                   await this.cacheService.set(this.cacheKey, all_products, this.cacheDuration);
                 }
                 return this.responseService.makeResponse({
                     message: `Product was added to the cart`,
-                    payload: null
+                    payload: { product: ProductMapper.toProductOperation(updatedProduct) }
                 })
             }
             const cartProducts = await userEntity.cart?.products || [];
@@ -405,22 +409,21 @@ export class ProductService {
                      }
                     : { status: EProductStatus.OFF_SALE, in_stock: false },
                 );
+                const updatedProduct = await this.productRepository.findOne({ where: { id: productId }});
                 const all_products = await this.cacheService.get<ProductGeneralEntity[]>(this.cacheKey) || [];
                 const cachedProduct = all_products.find((product) => product.id === productId);
                 if(cachedProduct){
-                  console.log("the product was found");
-                  await this.cacheService.update(this.cacheKey, product.id, product);
-                  console.log("the product was updated");
-                  const updated_products = await this.cacheService.get<ProductGeneralEntity[]>(this.cacheKey);
-                  const updated_product = updated_products.find((product) => product.id === productId);
-                  console.log("the updated product is: " + JSON.stringify(updated_product));
+                  await this.cacheService.update(this.cacheKey, product.id, updatedProduct);
+                  // const updated_products = await this.cacheService.get<ProductGeneralEntity[]>(this.cacheKey);
+                  // const updated_product = updated_products.find((product) => product.id === productId);
+                  // console.log("the updated product is: " + JSON.stringify(updated_product));
                 }else{
                   all_products.push(product)
                   await this.cacheService.set(this.cacheKey, all_products, this.cacheDuration);
                 }
                 return this.responseService.makeResponse({
                     message: `Product was added to the cart`,
-                    payload: null
+                    payload: { product: ProductMapper.toProductOperation(updatedProduct) }
                 })
             }
             return this.responseService.makeResponse({
@@ -481,6 +484,17 @@ export class ProductService {
             ? { quantity: Math.max(0, product.quantity + cartProduct.quantity) }
             : { status: EProductStatus.ON_SALE },
         );
+        const updatedProduct = await this.productRepository.findOne({
+          where: { id: productId, status: In(this.statuses) }
+        })
+        const all_products = await this.cacheService.get<ProductGeneralEntity[]>(this.cacheKey) || [];
+        const cachedProduct = all_products.find((product) => product.id === productId && this.statuses.includes(product.status));
+        if(!cachedProduct){
+          all_products.push(updatedProduct);
+          await this.cacheService.set(this.cacheKey, all_products, this.cacheDuration);
+        }else{
+          await this.cacheService.update(this.cacheKey, cachedProduct.id, updatedProduct);
+        }
         await this.cartProductRepository.remove(cartProduct);
         return this.responseService.makeResponse({
           message: `Removed product from your cart`,
@@ -513,8 +527,12 @@ export class ProductService {
         }
         const updatedProduct = ProductMapper.updatePairQuantity(product, dto);
         const savedProduct = await this.productRepository.save(updatedProduct);
-        all_products.push(savedProduct);
-        await this.cacheService.set(this.cacheKey, all_products, this.cacheDuration);
+        const cachedProduct = all_products.find((product) => product.id === id && this.statuses.includes(product.status));
+        if(!cachedProduct){
+          all_products.push(savedProduct)
+        }else{
+          await this.cacheService.update(product.id, cachedProduct.id, savedProduct);
+        }
         return this.responseService.makeResponse({
           message: `Product quantity updated`,
           payload: null
@@ -561,15 +579,16 @@ export class ProductService {
         const userCart = await userEntity.cart;
         const cartProduct = await userCart?.cartProducts.find((cart_product) => cart_product.productId === productId)
         if(!cartProduct){
-          throw new NotFoundException(`The cart product you requested was not found in your cart`);
+          return this.responseService.makeResponse({
+            message: `The requested product is not among your products`,
+            payload: null
+          })
         }
         cartProduct.quantity++;
-        console.log("the cartProduct prioce before is: " + cartProduct.price);
         cartProduct.price += product.sale_price > 0 && product.sale_price ? 
         product.sale_price : (
           product.regular_price > 0 && product.regular_price ? product.regular_price : 0
         );
-        console.log("the price of the cartProduct is: " + cartProduct.price)
         userCart.sub_total += product.sale_price > 0 && product.sale_price ? 
         product.sale_price : (
           product.regular_price > 0 && product.regular_price ? product.regular_price : 0
@@ -592,6 +611,17 @@ export class ProductService {
             : { status: EProductStatus.OFF_SALE, in_stock: false },
         );
         await this.cartRepository.save(userCart);
+        const updatedProduct = await this.productRepository.findOne({ where: { id: productId, status: In(this.statuses) }});
+        const all_products = await this.cacheService.get<ProductGeneralEntity[]>(this.cacheKey);
+        const final_product = all_products.find((product) => product.id === productId && this.statuses.includes(product.status));
+        if(!final_product){
+          all_products.push(updatedProduct);
+          await this.cacheService.set(this.cacheKey, all_products, this.cacheDuration);
+        }else{
+          console.log("the updated product is: " + JSON.stringify(updatedProduct));
+          console.log("this condition here was reached")
+          await this.cacheService.update(this.cacheKey, final_product.id, updatedProduct);
+        }
         return this.responseService.makeResponse({
           message: `Cart Product quantity updated`,
           payload: null
@@ -661,6 +691,16 @@ export class ProductService {
             : { status: EProductStatus.OFF_SALE, in_stock: false },
         );
         await this.cartRepository.save(userCart);
+        const updatedProduct = await this.productRepository.findOne({ where: { id: productId, status: In(this.statuses) }});
+        const all_products = await this.cacheService.get<ProductGeneralEntity[]>(this.cacheKey);
+        const final_product = all_products.find((product) => product.id === productId && this.statuses.includes(product.status));
+        if(!final_product){
+          all_products.push(updatedProduct);
+          await this.cacheService.set(this.cacheKey, all_products, this.cacheDuration);
+        }else{
+          console.log("this condition here was reached");
+          await this.cacheService.update(this.cacheKey, final_product.id, updatedProduct);
+        }
         return this.responseService.makeResponse({
           message: `Cart Product quantity updated`,
           payload: null
@@ -705,8 +745,6 @@ export class ProductService {
             payload: { cart: null }
           })
         }
-        const products = await userEntity.cart?.products || [];
-        console.log("the number of products in the cart are: " + products.length)
         const cartDto = await ProductMapper.toDtoCart(userEntity.cart);
         return this.responseService.makeResponse({
           message: `Your cart products`,
