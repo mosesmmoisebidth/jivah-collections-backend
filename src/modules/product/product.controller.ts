@@ -12,7 +12,7 @@ import { ProductService } from './product.service';
 import { ProductResponseDto } from './dtos/product-response.dto';
 import { ApiQuery } from '@nestjs/swagger';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { Get, Post,Body, Patch } from '@nestjs/common';
+import { Get, Post,Body, Patch, Delete } from '@nestjs/common';
 import { TOKEN_NAME } from 'src/constants';
 import { Public } from '../auth/decorators';
 import { ApiConsumes } from '@nestjs/swagger';
@@ -30,6 +30,7 @@ import { UpdateProductInventoryDto } from './dtos/update-product-inventory.dto';
 import { PairQuantityDto } from './dtos/pair-quantity.dto';
 import { UpdateProductDto } from './dtos/update-product.dto';
 import { UpdateProductRequestDto } from './dtos/update-product-request.dto';
+import { Permissions } from '../auth/decorators/permissions.decorator';
 import { ViewCartDto } from './dtos/view-cart.dto';
 import { ProductOperationResponseDto } from './dtos/product-operation-response.dto';
 import { ViewCartResponseDto } from './dtos/view-cart-response.dto';
@@ -91,6 +92,7 @@ export class ProductController {
     @ApiForbiddenCustomResponse(NullDto)
     @ApiUnauthorizedCustomResponse(NullDto)
     @ApiBearerAuth(TOKEN_NAME)
+    @Permissions('create.products')
     @Post('/product/add')
     @UseInterceptors(
         FileFieldsInterceptor([
@@ -146,6 +148,7 @@ export class ProductController {
     @ApiUnauthorizedCustomResponse(NullDto)
     @ApiForbiddenCustomResponse(NullDto)
     @ApiBearerAuth(TOKEN_NAME)
+    @Permissions('update.products')
     @Patch('/product/inventory/:id')
     public updateProductInventory(
         @Param('id', ParseUUIDPipe) id: string,
@@ -170,6 +173,7 @@ export class ProductController {
     )
     )
     @ApiBearerAuth(TOKEN_NAME)
+    @Permissions('update.products')
     @ApiConsumes('multipart/form-data')
     public async updateProductGeneral(
         @Param('id', ParseUUIDPipe) id: string,
@@ -210,6 +214,7 @@ export class ProductController {
     @ApiUnauthorizedCustomResponse(NullDto)
     @ApiForbiddenCustomResponse(NullDto)
     @ApiBearerAuth(TOKEN_NAME)
+    @Permissions('update.products')
     @Patch('/product/pair-quantity/:id')
     public updateProductPairQuantity(
         @Param('id', ParseUUIDPipe) id: string,
@@ -274,6 +279,19 @@ export class ProductController {
     @Get('/product/cart/view')
     public viewCart(): Promise<ResponseDto<ViewCartResponseDto>> {
         return this.productService.viewCart();
+    }
+
+    @ApiOperation({ description: 'Delete product' })
+    @ApiOkCustomResponse(ResponseDto<string>)
+    @ApiUnauthorizedCustomResponse(NullDto)
+    @ApiForbiddenCustomResponse(NullDto)
+    @ApiBearerAuth(TOKEN_NAME)
+    @Permissions('delete.products')
+    @Delete('/product/delete/:id')
+    public deleteProduct(
+        @Param('id') id: string
+    ): Promise<ResponseDto<string>> {
+        return this.productService.deleteProduct(id);
     }
 
 }

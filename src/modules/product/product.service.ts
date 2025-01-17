@@ -9,7 +9,7 @@ import { AllConfigType } from "src/config";
 import { ResponseService } from "src/shared/response/response.service";
 import { ConfigService } from "@nestjs/config";
 import { DBErrorCode } from "src/common/enums";
-import { ConflictCustomException, InternalServerErrorCustomException } from "src/common/http";
+import { ConflictCustomException, InternalServerErrorCustomException, NotFoundCustomException } from "src/common/http";
 import { CreateProductDto } from "./dtos/create-product.dto";
 import { BadRequestCustomException } from "src/common/http";
 import { NotFoundException } from "@nestjs/common";
@@ -34,6 +34,7 @@ import { Logger } from "@nestjs/common";
 import { CartProductRepository } from "../cart/model/cart-product.repository";
 import { ECartStatus } from "../cart/enums/cart-status.enum";
 import { ViewCartResponseDto } from "./dtos/view-cart-response.dto";
+import { CustomException } from "src/common/http/exceptions/custom.exception";
 import { ProductGeneralDto } from "./dtos/product-general.dto";
 import { ProductOperationResponseDto } from "./dtos/product-operation-response.dto";
 @Injectable({ scope: Scope.REQUEST })
@@ -759,6 +760,35 @@ export class ProductService {
         } else {
           throw new InternalServerErrorException(`An unknown error occured while getting your cart products`);
         }
+      }
+    }
+
+    async deleteProduct(
+      productId: string
+    ): Promise<ResponseDto<string>> {
+      try{
+        const product = await this.productRepository.findOne({
+          where: { id: productId, status: In(this.statuses) }
+        })
+        if(!product){
+          throw new NotFoundCustomException(`The product you are trying to delete was not found try again`);
+        }
+        await this.productRepository.update(
+          product.id,
+          { status: EProductStatus.DELETED }
+        )
+        const all_products = await this.cacheService.get<ProductGeneralEntity[]>(this.cacheKey) || [];
+        const cachedProduct = all_products.find((product) => product.id === productId && this.statuses.includes(product.status));
+        if(cachedProduct){
+          await this.cacheService.delete(this.cacheKey, productId);
+        }
+        return this.responseService.makeResponse({
+          message: `Product was deleted among the products`,
+          payload: null
+        })
+
+      }catch(error){
+        throw new CustomException(error);
       }
     }
 }

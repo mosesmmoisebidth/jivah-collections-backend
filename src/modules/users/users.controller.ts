@@ -87,7 +87,7 @@ import { RemovePermissionsFromUserDto } from './dto/remove-permissions.dto';
       type: 'boolean',
       required: false,
     })
-    // @Permissions('read.users')
+    @Permissions('read.users')
     @ApiOkPaginatedResponse(UserDto)
     @ApiUnauthorizedCustomResponse(NullDto)
     @ApiForbiddenCustomResponse(NullDto)
@@ -104,7 +104,7 @@ import { RemovePermissionsFromUserDto } from './dto/remove-permissions.dto';
     @ApiUnauthorizedCustomResponse(NullDto)
     @ApiForbiddenCustomResponse(NullDto)
     @ApiBearerAuth(TOKEN_NAME)
-    // @Permissions('create.users')
+    @Permissions('create.users')
     @Post('/create/user')
     public createUser(
       @Body(ValidationPipe) dto: CreateUserDto
@@ -267,6 +267,7 @@ import { RemovePermissionsFromUserDto } from './dto/remove-permissions.dto';
       @ApiOperation({ description: 'Delete user' })
       @ApiOkCustomResponse(ResponseDto<string>)
       @ApiBearerAuth(TOKEN_NAME)
+      @Permissions('delete.users')
       @Delete('/delete-user/:id')
       public deleteUser(
         @Param('id', ParseUUIDPipe) id: string

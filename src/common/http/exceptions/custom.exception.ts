@@ -36,6 +36,14 @@ export class CustomException extends HttpException {
          throw new RequestTimeoutException(`Check your internet connection and try again`);
       }
 
+      if (error instanceof NotFoundCustomException){
+         throw new NotFoundCustomException(`the resource you are looking was not found, ${error.message}`)
+      }
+
+      if (error instanceof RequestTimeoutException){
+         throw new RequestTimeoutException(`Check your internet connection or if you are behind a proxy and try again`);
+      }
+
       if (error instanceof JsonWebTokenError) {
          throw new BadRequestCustomException("Invalid Token!");
       }
