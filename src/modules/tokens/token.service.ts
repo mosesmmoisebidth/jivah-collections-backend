@@ -154,10 +154,15 @@ export class TokensService {
         payload.tid,
       );
 
+      const accessExpiresAt = new Date(Date.now() + 20 * 60 * 1000); // 20 minutes from now
+      const refreshExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
       return {
         tokens: {
           accessToken: accessToken.token,
           refreshToken,
+          expiresAt: accessExpiresAt,
+          refresh_expiresAt: refreshExpiresAt
         },
       };
     } catch (error) {
@@ -211,12 +216,16 @@ export class TokensService {
 
   async generateTokens(
     user: UserEntity,
-  ): Promise<{ accessToken: string; refreshToken: string }> {
+  ): Promise<{ accessToken: string; refreshToken: string; expiresAt: Date, refresh_expiresAt: Date }> {
     const refreshToken = await this.generateRefreshToken(user);
     const accessToken = await this.generateAccessToken(user, refreshToken.id);
+    const accessExpiresAt = new Date(Date.now() + 20 * 60 * 1000); // 20 minutes from now
+    const refreshExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
     return {
       accessToken: accessToken.token,
       refreshToken: refreshToken.token,
+      expiresAt: accessExpiresAt,
+      refresh_expiresAt: refreshExpiresAt
     };
   }
 }

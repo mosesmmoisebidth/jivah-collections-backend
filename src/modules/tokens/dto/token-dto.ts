@@ -6,4 +6,10 @@ export class TokenDto {
 
   @ApiProperty()
   refreshToken: string;
+
+  @ApiProperty()
+  expiresAt: Date;
+
+  @ApiProperty()
+  refresh_expiresAt: Date;
 }
