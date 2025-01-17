@@ -2,6 +2,7 @@ import { Entity, Column, ManyToMany } from 'typeorm';
 import { CommonEntity } from 'src/common/entities';
 import { RoleEntity } from '../../roles/model/role.entity';
 import { UserEntity } from 'src/modules/users/model/users.entity';
+import { RoleStatus } from 'src/modules/roles/enums/role-status.enum';
 
 @Entity({ schema: "users", name: 'permissions' })
 export class PermissionEntity extends CommonEntity {
@@ -29,6 +30,14 @@ export class PermissionEntity extends CommonEntity {
     default: true,
   })
   active: boolean;
+
+  @Column({
+    nullable: false,
+    type: 'enum',
+    enum: RoleStatus,
+    default: RoleStatus.Active
+  })
+  status: RoleStatus;
 
   @ManyToMany(() => RoleEntity, (role) => role.permissions)
   roles: RoleEntity[];

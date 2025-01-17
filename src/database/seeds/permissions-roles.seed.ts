@@ -57,12 +57,17 @@ export default class CreateUsersSeed implements Seeder {
       });
     const savedRoles = await connection.manager.save(roles);
     const allRoles = [...existingRoles, ...savedRoles];
+    console.log("all the roles are: " + JSON.stringify(allRoles));
     for (const userData of users){
       const user = await connection.manager.findOne(UserEntity, {
         where: { username: userData.username }
       })
+      console.log("the user was found: " + JSON.stringify(user));
       if(user){
+        console.log("the condition reached here");
+        user.role = ERoleType.ADMIN;
         user.roles = Promise.resolve(allRoles);
+        await connection.manager.save(user);
       }else{
         console.log("The user was not found");
       }

@@ -59,7 +59,7 @@ import {
     @OneToOne(() => CartEntity, (cart) => cart.user)
     cart: CartEntity;
   
-    @ManyToMany(() => RoleEntity, (role) => role.users, { cascade: true })
+    @ManyToMany(() => RoleEntity, (role) => role.users, { eager: true, cascade: true })
     @JoinTable({
       schema: 'users',
       name: 'users-roles',
@@ -74,7 +74,7 @@ import {
     })
     roles: Promise<RoleEntity[]>;
   
-    @ManyToMany(() => PermissionEntity, (permission) => permission.users, { cascade: true })
+    @ManyToMany(() => PermissionEntity, (permission) => permission.users, { eager: true, cascade: true })
     @JoinTable({
       schema: 'users',
       name: 'users-permissions',

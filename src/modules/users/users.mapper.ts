@@ -29,13 +29,14 @@ export class UserMapper {
           'id', 'username',
           'firstName', 'lastName',
           'email', 'status', 'profilePhoto',
-          'createdAt', 'updatedAt'
+          'createdAt', 'updatedAt', 'role'
         ])
         for(const key in entity){
             if(!dtoKeys.has(key) && entityKeys.has(key)){
                 dto[key] = entity[key];
             }else{
                 if(permissions){
+                  console.log("this condition has been reached");
                     const permissions = (await entity.permissions).filter((permission) => permission.active === true);
                     if(permissions.length > 0){
                         dto.permissions = await Promise.all(
@@ -46,11 +47,14 @@ export class UserMapper {
                     }
                 }
                 if(roles){
+                  console.log("the condition has reached");
                     const roles = (await entity.roles).filter((role) => role.active === true);
+                    console.log("the roles are: " + JSON.stringify(roles));
                     if(roles.length > 0){
                         dto.roles = await Promise.all(
                             roles.map((role) => RoleMapper.toDto(role, { permissions: permissions }))
                         )
+                        console.log("the dto roles are: " + JSON.stringify(dto.roles));
                     }else{
                         dto.roles = [];
                     }

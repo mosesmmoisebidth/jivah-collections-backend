@@ -63,12 +63,11 @@ import { RemovePermissionsFromUserDto } from './dto/remove-permissions.dto';
      * @param pagination {PaginationRequest}
      * @returns {Promise<PaginationResponseDto<UserResponseDto>>}
      */
-    private getFilterTypes(properties: boolean, permissions: boolean, roles: boolean): string[] {
+    private getFilterTypes(permissions: boolean, roles: boolean): string[] {
       const filterTypes = [];
-      if (properties) filterTypes.push("properties");
       if (permissions) filterTypes.push("permissions");
       if (roles) filterTypes.push("roles");
-      return filterTypes.length ? filterTypes : ["properties", "permissions", "roles"];
+      return filterTypes.length ? filterTypes : ["permissions", "roles"];
     }
     public async getUsers(
       pagination: PaginationRequest,
@@ -76,10 +75,9 @@ import { RemovePermissionsFromUserDto } from './dto/remove-permissions.dto';
       try {
         const search = pagination.params?.search ?? '';
         const deleted = isTrueOrFalse(pagination.params?.deleted ?? '');
-        const properties = isTrueOrFalse(pagination.params?.properties ?? '');
         const permissions = isTrueOrFalse(pagination.params?.permissions ?? '');
         const roles = isTrueOrFalse(pagination.params?.roles ?? '');
-        const filters = this.getFilterTypes(properties, permissions, roles);
+        const filters = this.getFilterTypes(permissions, roles);
         const users = await handlePaginate(this.userRepository, pagination, {
           order: pagination.order,
           where: [
@@ -119,18 +117,10 @@ import { RemovePermissionsFromUserDto } from './dto/remove-permissions.dto';
             payload: totalDeletedUsers,
           });
         }
-        let active_users_response;
-        if(properties){
-            active_users_response = await Promise.all(
-                active_users.map(async (active_user: UserEntity) => 
-                await UserMapper.toDtoPermRoles(active_user, { permissions, roles }))
-            )
-        }else{
-          active_users_response = await Promise.all(
-            active_users.map((active_user: UserEntity) => 
-            UserMapper.toDtoPermRoles(active_user, { permissions, roles }))
-          )
-        }
+        const active_users_response = await Promise.all(
+          active_users.map((active_user: UserEntity) => 
+          UserMapper.toDtoPermRoles(active_user, { permissions, roles }))
+        )
         const totalActiveUsers: PaginationResponseDto<UserDto> = {
           items: active_users_response,
           itemCount: active_users_response.length,
@@ -166,7 +156,7 @@ import { RemovePermissionsFromUserDto } from './dto/remove-permissions.dto';
         const userExists = await this.userRepository.findOne({
           where: [{ username }, { email }],
         });
-        if(!userExists){
+        if(userExists){
           return this.responseService.makeResponse({
             message: `User already exists`,
             payload: null
@@ -191,9 +181,38 @@ import { RemovePermissionsFromUserDto } from './dto/remove-permissions.dto';
           firstName: dto.firstName,
           lastName: dto.lastName,
           password: tempPassword,
-          role: ERoleType.USER,
+          role: dto.role,
           profilePhoto: randomProfilePhoto
         });
+        if(dto.role === ERoleType.ADMIN){
+          const roleEntity = await this.roleRepository.findOne({
+            where: { name: ERoleType.ADMIN },
+            relations: ['permissions']
+          })
+          userEntity.roles = Promise.resolve([roleEntity]);
+          userEntity.permissions = Promise.resolve([]);
+          const savedUser = await this.userRepository.save(userEntity);
+          const createdUser = new CreatedUserDto();
+          createdUser.id = savedUser.id;
+          createdUser.username = savedUser.username;
+          createdUser.email = savedUser.email;
+          createdUser.createdAt = savedUser.createdAt;
+          createdUser.updatedAt = savedUser.updatedAt;
+          await this.mailService.sendEMail({
+            body: registerUserTemplate({
+              firstName: dto.firstName,
+              username,
+              password: tempPassword,
+              resetLink: RESET_LINK
+            }),
+            subject: `User Registration`,
+            to: savedUser.email
+          })
+          return this.responseService.makeResponse({
+            message: `User created succesfully`,
+            payload: createdUser
+          })
+        }
         const roleEntity = await this.roleRepository.findOne({
           where: { name: ERoleType.USER },
           relations: ['permissions']
@@ -246,23 +265,17 @@ import { RemovePermissionsFromUserDto } from './dto/remove-permissions.dto';
      */
     public async getUserById(
       id: string,
-      params: { roles?: string, permissions?: string, properties?: string  }
+      params: { roles?: string, permissions?: string,   }
     ): Promise<ResponseDto<UserResponseDto>> {
       const roles = isTrueOrFalse(params?.roles ?? '');
       const permissions = isTrueOrFalse(params?.permissions ?? '');
-      const properties = isTrueOrFalse(params?.properties ?? '');
-      let filters = this.getFilterTypes(properties, permissions, roles);
-      filters = [...filters, "profilePhoto"]
+      let filters = this.getFilterTypes(permissions, roles);
+      filters = [...filters]
       const userEntity = await this.userRepository.findOne({ where: { id }, relations: filters });
       if (!userEntity || userEntity.status === UserStatus.Deleted) {
         throw new NotFoundCustomException('Not found');
       }
-      let user_response;
-      if(properties){
-        user_response = await UserMapper.toDtoPermRoles(userEntity, { permissions, roles });
-      }else{
-        user_response = await UserMapper.toDtoPermRoles(userEntity, { roles, permissions })
-      }
+      const user_response = await UserMapper.toDtoPermRoles(userEntity, { permissions, roles });
       return this.responseService.makeResponse({
         message: 'User found by id',
         payload: {

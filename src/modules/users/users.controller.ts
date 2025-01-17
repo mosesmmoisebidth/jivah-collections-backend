@@ -87,7 +87,7 @@ import { RemovePermissionsFromUserDto } from './dto/remove-permissions.dto';
       type: 'boolean',
       required: false,
     })
-    @Permissions('read.users')
+    // @Permissions('read.users')
     @ApiOkPaginatedResponse(UserDto)
     @ApiUnauthorizedCustomResponse(NullDto)
     @ApiForbiddenCustomResponse(NullDto)
@@ -104,16 +104,18 @@ import { RemovePermissionsFromUserDto } from './dto/remove-permissions.dto';
     @ApiUnauthorizedCustomResponse(NullDto)
     @ApiForbiddenCustomResponse(NullDto)
     @ApiBearerAuth(TOKEN_NAME)
+    // @Permissions('create.users')
     @Post('/create/user')
     public createUser(
-      dto: CreateUserDto
+      @Body(ValidationPipe) dto: CreateUserDto
     ): Promise<ResponseDto<CreatedUserDto>> {
       return this.usersService.createUser(dto);
     }
   
     @ApiOperation({ description: 'Get user by id' })
     @ApiOkCustomResponse(UserResponseDto)
-    @Public()
+    @Permissions('read.users')
+    @ApiBearerAuth(TOKEN_NAME)
     @Get('/user/:id')
     @ApiQuery({
       name: 'roles',
@@ -195,6 +197,7 @@ import { RemovePermissionsFromUserDto } from './dto/remove-permissions.dto';
       @ApiUnauthorizedCustomResponse(NullDto)
       @ApiForbiddenCustomResponse(NullDto)
       @ApiBearerAuth(TOKEN_NAME)
+      @Permissions('create.permissions')
       @Patch('/permissions/add/:id')
       async addPermissionsToUser(
         @Param('id') id: string,
@@ -209,6 +212,7 @@ import { RemovePermissionsFromUserDto } from './dto/remove-permissions.dto';
       @ApiUnauthorizedCustomResponse(NullDto)
       @ApiForbiddenCustomResponse(NullDto)
       @ApiBearerAuth(TOKEN_NAME)
+      @Permissions('delete.permissions')
       @Patch('/permissions/remove/:id')
       async removePermissionsFromUser(
         @Param('id') id: string,

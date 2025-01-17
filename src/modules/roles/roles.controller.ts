@@ -5,6 +5,7 @@ import {
   Body,
   Get,
   Put,
+  Patch,
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { ApiOkPaginatedResponse, PaginationParams, PaginationRequest } from 'src/helpers/pagination';
@@ -28,7 +29,10 @@ import { ApiBadRequestCustomResponse } from 'src/common/decorators/api-bad-reque
 import { ApiUnauthorizedCustomResponse } from 'src/common/decorators/api-unauthorized-custom-response.decorator';
 import { ApiForbiddenCustomResponse } from 'src/common/decorators/api-forbidden-custom-response.decorator';
 import { RoleDto } from './dtos/role-dto';
+import { AddPermissionsToRoleRequestDto } from './dtos/add-permissions-request.dto';
 import { ResponseDto } from 'src/common/dtos';
+import { RemovePermissionsFromRoleRequestDto } from './dtos/remove-permissions-request.dto';
+
 
 @ApiTags('Roles')
 @ApiBearerAuth(TOKEN_NAME)
@@ -72,6 +76,34 @@ export class RolesController {
   ): Promise<ResponseDto<RoleResponseDto>> {
     return this.rolesService.getRoleById(id);
   }
+
+  @ApiOperation({
+    description: "Update add permissions to role by id"
+ })
+ @ApiOkCustomResponse(RoleResponseDto)
+//  @Permissions("update.roles")
+ @Patch("/add-permissions/:id")
+ public addPermissions(
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body(ValidationPipe)
+    addPermissionDto: AddPermissionsToRoleRequestDto,
+ ): Promise<ResponseDto<RoleResponseDto>> {
+    return this.rolesService.addPermissions(id, addPermissionDto);
+ }
+
+ @ApiOperation({
+    description: "Update remove permissions from role by id"
+ })
+ @ApiOkCustomResponse(RoleResponseDto)
+//  @Permissions("update.roles")
+ @Patch("/remove-permissions/:id")
+ public removePermissions(
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body(ValidationPipe)
+    removePermissiosDto: RemovePermissionsFromRoleRequestDto
+ ): Promise<ResponseDto<RoleResponseDto>> {
+    return this.rolesService.removePermissions(id, removePermissiosDto);
+ }
 
   @ApiOperation({ description: 'Update role by id' })
   @ApiOkCustomResponse(RoleResponseDto)

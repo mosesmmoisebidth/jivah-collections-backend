@@ -13,13 +13,18 @@ import { TimeoutError } from 'rxjs';
 import { handlePaginate } from 'src/helpers/pagination/pagination.helper';
 import { PaginationResponseDto } from 'src/helpers/pagination/pagination-response.dto';
 import { RoleRepository } from './model/role.repository';
-import { ILike } from 'typeorm';
+import { ILike, In } from 'typeorm';
+import { RemovePermissionsFromRoleRequestDto } from './dtos/remove-permissions-request.dto';
 import { BadRequestCustomException, ConflictCustomException } from 'src/common/http';
 import { ResponseDto } from 'src/common/dtos';
+import { RoleStatus } from './enums/role-status.enum';
 import { ResponseService } from 'src/shared/response/response.service';
 import { RoleDto } from './dtos/role-dto';
+import { CustomException } from 'src/common/http/exceptions/custom.exception';
 import { isTrueOrFalse } from 'src/utils/boolean.util';
+import { AddPermissionsToRoleRequestDto } from './dtos/add-permissions-request.dto';
 import { RoleEntity } from './model/role.entity';
+import { PermissionRepository } from '../permissions/model/permission.repository';
 import { FindOperator } from 'typeorm';
 import { ERoleType } from './enums/role.enum';
 @Injectable({ scope: Scope.REQUEST })
@@ -27,6 +32,7 @@ export class RolesService {
   constructor(
     private rolesRepository: RoleRepository,
     private responseService: ResponseService,
+    private permissionRepository: PermissionRepository
   ) {}
 
   /**
@@ -131,4 +137,62 @@ export class RolesService {
       }
     }
   }
+
+  public async addPermissions(
+    id: string,
+    addPermissionDto: AddPermissionsToRoleRequestDto,
+ ): Promise<ResponseDto<RoleResponseDto>> {
+    const roleEntity = await this.rolesRepository.findOneBy({
+       id,
+       status: In([RoleStatus.Active, RoleStatus.Inactive])
+    });
+    if (!roleEntity) throw new NotFoundException();
+    try {
+       await RoleMapper.addPermissions(roleEntity, addPermissionDto.permissions);
+       const updatedRoleEntity = await this.rolesRepository.findOneBy({ id });
+       const role = await RoleMapper.toDto(updatedRoleEntity, {
+          permissions: true
+       });
+       return this.responseService.makeResponse({
+          message: "Role updated successfully",
+          payload: { role }
+       });
+    } catch (error) {
+       throw new CustomException(error);
+    }
+ }
+
+ public async removePermissions(
+  id: string,
+  removePermissionDto: RemovePermissionsFromRoleRequestDto
+): Promise<ResponseDto<RoleResponseDto>> {
+  const permissionsExist = await this.permissionRepository.findBy({
+     id: In(removePermissionDto.permissions),
+     status: In([RoleStatus.Active, RoleStatus.Inactive])
+  });
+  if (permissionsExist.length === 0) {
+     throw new NotFoundException(
+        `Permissions trying to be deleted are not found on the role ${id}`
+     );
+  }
+  const roleEntity = await this.rolesRepository.findOneBy({
+     id
+  });
+  if (!roleEntity) throw new NotFoundException();
+  try {
+     await RoleMapper.removePermissions(roleEntity, removePermissionDto.permissions);
+     const updatedRoleEntity = await this.rolesRepository.findOneBy({ id });
+     const role = await RoleMapper.toDto(updatedRoleEntity, {
+        permissions: true
+     });
+     return this.responseService.makeResponse({
+        message: "Role updated successfully",
+        payload: { role }
+     });
+  } catch (error) {
+     throw new CustomException(error);
+  }
+}
+
+
 }
