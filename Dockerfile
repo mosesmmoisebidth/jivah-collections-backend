@@ -21,4 +21,4 @@ RUN yarn build
 EXPOSE 8083
 
 # Set the command to run the application and seed the database
-CMD ["sh", "-c", "yarn seed && yarn start:prod"]
+CMD ["sh", "-c", "yarn start:prod"]

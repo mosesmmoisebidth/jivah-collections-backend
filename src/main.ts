@@ -22,10 +22,10 @@ async function bootstrap() {
     const { apiPrefix, port } = configService.get<IAppConfig>('app');
     app.use(helmet());
     app.use(compression());
+    console.log("enabling cors")
     app.enableCors({
-      origin: '*',
-      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS', // Explicitly allow HTTP methods
-      allowedHeaders: 'Content-Type,Authorization',
+      origin: ['http://localhost:3000', 'https://jivah.vercel.app'],
+      credentials: true,
     });
     app.use(cookieParser());
     app.enableVersioning();
