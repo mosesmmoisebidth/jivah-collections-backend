@@ -23,12 +23,12 @@ async function bootstrap() {
     app.use(helmet());
     app.use(compression());
     console.log("enabling cors")
-    // app.enableCors({
-    //   origin: ['http://localhost:3000', 'https://jivah.vercel.app'], // Allow specific origins
-    //   credentials: true, // Allow cookies to be sent with requests
-    //   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS', // Explicitly allow HTTP methods
-    //   allowedHeaders: 'Content-Type,Authorization', // Explicitly allow headers
-    // });
+    app.enableCors({
+      origin: ['http://localhost:3000', 'https://jivah.vercel.app'], // Allow specific origins
+      credentials: true, // Allow cookies to be sent with requests
+      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS', // Explicitly allow HTTP methods
+      allowedHeaders: 'Content-Type,Authorization', // Explicitly allow headers
+    });
     app.use(cookieParser());
     app.enableVersioning();
     app.useGlobalFilters(new HttpExceptionFilter());
