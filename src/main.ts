@@ -24,7 +24,9 @@ async function bootstrap() {
     app.use(compression());
     app.enableCors({
       origin: ['http://localhost:3000', 'https://jivah.vercel.app'],
-      credentials: true
+      credentials: true,
+      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS', // Explicitly allow HTTP methods
+      allowedHeaders: 'Content-Type,Authorization',
     });
     app.use(cookieParser());
     app.enableVersioning();
