@@ -23,8 +23,7 @@ async function bootstrap() {
     app.use(helmet());
     app.use(compression());
     app.enableCors({
-      origin: ['http://localhost:3000', 'https://jivah.vercel.app'],
-      credentials: true,
+      origin: '*',
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS', // Explicitly allow HTTP methods
       allowedHeaders: 'Content-Type,Authorization',
     });
