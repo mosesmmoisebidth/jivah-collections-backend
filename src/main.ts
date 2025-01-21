@@ -31,7 +31,11 @@ async function bootstrap() {
         res.setHeader('Access-Control-Allow-Credentials', 'true');
         res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
         res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+        if (req.method === 'OPTIONS') {
+          return res.status(204).send(); // Preflight response with no content
+        }
       }
+
       next();
     });    
     app.use(cookieParser());
