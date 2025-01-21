@@ -22,8 +22,8 @@ async function bootstrap() {
     const { apiPrefix, port } = configService.get<IAppConfig>('app');
     app.use(helmet());
     app.use(compression());
-    app.use(cookieParser());
     app.enableCors();
+    app.use(cookieParser());
     app.enableVersioning();
     app.useGlobalFilters(new HttpExceptionFilter());
     app.useGlobalPipes(new ValidationPipe(validationOptions));
