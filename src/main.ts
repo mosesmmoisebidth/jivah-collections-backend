@@ -23,7 +23,7 @@ async function bootstrap() {
     app.use(helmet());
     app.use(compression());
     app.enableCors({
-      origin: '*',
+      origin: ['http://localhost:3000'],
       credentials: true
     });
     app.use(cookieParser());
