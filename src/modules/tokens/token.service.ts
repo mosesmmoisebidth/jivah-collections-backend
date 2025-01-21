@@ -32,6 +32,7 @@ export class TokensService {
       sub: user.id,
       tid: refreshTokenData.id,
       type: TokenType.RefreshToken,
+      role: user.role
     };
 
     const refreshToken = await this.jwtService.signAsync(payload, {
@@ -92,6 +93,7 @@ export class TokensService {
       sub: user.id,
       tid: accessTokenData.id,
       type: TokenType.AccessToken,
+      role: user.role
     };
 
     const refreshToken = await this.jwtService.signAsync(payload, {
@@ -112,15 +114,14 @@ export class TokensService {
           secret: this.configService.get('security.jwtAccess'),
         },
       );
-
       const foundToken = await this.tokenRepository.findOneBy({
         id: payload.tid,
         type: TokenType.AccessToken,
         isActive: true,
       });
-
-      if (!foundToken || !foundToken.isActive)
-        throw new NotFoundCustomException('Token Not Found!');
+      if (!foundToken || !foundToken.isActive){
+        throw new NotFoundCustomException();
+      }
       return payload;
     } catch (error) {
       await this.tokenRepository.update(

@@ -6,6 +6,7 @@ import { TokensService } from 'src/modules/tokens/token.service';
 import { InternalServerErrorCustomException } from 'src/common/http';
 import { UnauthorizedCustomException } from 'src/common/http/exceptions/unauthorized.exception';
 import { AuthGuard } from '@nestjs/passport';
+import { Request } from 'express';
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
   constructor(
@@ -22,6 +23,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
    */
   async canActivate(context: ExecutionContext): Promise<any> {
     try {
+      const request = context.switchToHttp().getRequest<Request>();
       const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC, [
         context.getHandler(),
         context.getClass(),
@@ -30,15 +32,16 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       if (isPublic) {
         return true;
       }
-
-      const accessToken = ExtractJwt.fromAuthHeaderAsBearerToken()(
+      let accessToken = ExtractJwt.fromAuthHeaderAsBearerToken()(
         context.switchToHttp().getRequest(),
       );
+      if(!accessToken){
+        accessToken = request.cookies['accessToken'];
+      }
       if (!accessToken) throw new UnauthorizedCustomException('Not logged in!');
-
-      await this.tokenService.verifyAccessToken(accessToken);
-
-      return super.canActivate(context);
+      const payload = await this.tokenService.verifyAccessToken(accessToken);
+      request.user = payload;
+      return true;
     } catch (error) {
       if (error.name !== 'Error') throw error;
       throw new InternalServerErrorCustomException();

@@ -8,7 +8,7 @@ import {
     HttpStatus,
     Get,
   } from '@nestjs/common';
-
+  import { Response } from 'express';
   import { AuthCredentialsRequestDto, LoginResponseDto } from './dto';
   import { AuthService } from './auth.service';
   import { AuthRegisterRequestDto } from './dto/auth-register.dto';
@@ -16,6 +16,7 @@ import {
   import { FirebaseLoginRequestDto } from './dto/firebase-login-request.dto';
   import { ApiCreatedCustomResponse, ApiOkCustomResponse, Ip } from 'src/common/decorators';
   import { TOKEN_NAME } from 'src/constants';
+  import { Res } from '@nestjs/common';
   import { ApiBadRequestCustomResponse } from 'src/common/decorators/api-bad-request-custom-response.decorator';
   import { ApiInternalServerErrorCustomResponse } from 'src/common/decorators/api-ise-custom-response.decorator';
   import { NullDto } from 'src/common/dtos/null.dto';
@@ -53,8 +54,9 @@ import {
       @Body(ValidationPipe) authCredentialsDto: AuthCredentialsRequestDto,
       @Ip() ip: string,
       @Headers('user-agent') ua: string,
+      @Res({ passthrough: true }) res: Response,
     ): Promise<ResponseDto<LoginResponseDto>> {
-      return this.authService.login(authCredentialsDto, ip, ua);
+      return this.authService.login(authCredentialsDto, ip, ua, res);
     }
   
     @Post('/firebase/register')

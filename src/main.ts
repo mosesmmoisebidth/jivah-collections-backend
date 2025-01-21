@@ -8,6 +8,7 @@ import validationOptions from './common/validator/options.validator';
 import * as compression from 'compression';
 import * as helmet from 'helmet';
 import cluster from 'cluster';
+import * as cookieParser from 'cookie-parser';
 import { HttpExceptionFilter } from './common/http/http-exception.filter';
 
 async function bootstrap() {
@@ -21,6 +22,7 @@ async function bootstrap() {
     const { apiPrefix, port } = configService.get<IAppConfig>('app');
     app.use(helmet());
     app.use(compression());
+    app.use(cookieParser());
     app.enableCors();
     app.enableVersioning();
     app.useGlobalFilters(new HttpExceptionFilter());

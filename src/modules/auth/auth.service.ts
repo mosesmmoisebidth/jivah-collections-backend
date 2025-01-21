@@ -42,6 +42,7 @@ import {
   import { DecodedIdToken } from 'firebase-admin/lib/auth/token-verifier';
   import { RoleRepository } from '../roles/model/role.repository';
   import * as path from 'path';
+  import { Response } from 'express';
   import { promises as fs } from 'fs';
   import { ERoleType } from '../roles/enums/role.enum';
 import { TimeoutError } from 'rxjs';
@@ -69,6 +70,7 @@ import { TimeoutError } from 'rxjs';
       authCredentialsRequestDto: AuthCredentialsRequestDto,
       ip: string,
       ua: string,
+      res: Response
     ): Promise<ResponseDto<LoginResponseDto>> {
       try{
         const { username, password } = authCredentialsRequestDto;
@@ -82,6 +84,18 @@ import { TimeoutError } from 'rxjs';
         throw new BadRequestCustomException('User blocked');
       }
       const tokens = await this.tokenService.generateTokens(user);
+      res.cookie('accessToken', tokens.accessToken), {
+        httpOnly: true,
+        secure: process.env.IS_DEV ? true : true,
+        sameSite: 'strict',
+        maxAge: 1000 * 60 * 20
+      }
+      res.cookie('refreshToken', tokens.refreshToken, {
+        httpOnly: true,
+        secure: process.env.IS_DEV ? true: true,
+        sameSite: 'strict',
+        maxAge: 1000 * 60 * 60 * 24 * 30, // 7 days for refreshToken
+      });
       const userDto = await UserMapper.toDtoPermRoles(user);
       const createdLoginLog = await this.loginLogService.create(user, ip, ua);
       await this.mailService.sendEMail({
