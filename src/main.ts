@@ -22,7 +22,10 @@ async function bootstrap() {
     const { apiPrefix, port } = configService.get<IAppConfig>('app');
     app.use(helmet());
     app.use(compression());
-    app.enableCors();
+    app.enableCors({
+      origin: '*',
+      credentials: true
+    });
     app.use(cookieParser());
     app.enableVersioning();
     app.useGlobalFilters(new HttpExceptionFilter());

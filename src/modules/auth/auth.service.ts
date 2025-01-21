@@ -87,13 +87,13 @@ import { TimeoutError } from 'rxjs';
       res.cookie('accessToken', tokens.accessToken), {
         httpOnly: true,
         secure: process.env.IS_DEV ? false : false,
-        sameSite: 'strict',
+        sameSite: 'lax',
         maxAge: 1000 * 60 * 20
       }
       res.cookie('refreshToken', tokens.refreshToken, {
         httpOnly: true,
         secure: process.env.IS_DEV ? false: false,
-        sameSite: 'strict',
+        sameSite: 'lax',
         maxAge: 1000 * 60 * 60 * 24 * 30, // 7 days for refreshToken
       });
       const userDto = await UserMapper.toDtoPermRoles(user);
