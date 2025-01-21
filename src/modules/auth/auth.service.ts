@@ -96,6 +96,7 @@ import { TimeoutError } from 'rxjs';
         sameSite: 'lax',
         maxAge: 1000 * 60 * 60 * 24 * 30, // 7 days for refreshToken
       });
+      console.log("the value of the environment is: " + JSON.stringify(process.env.NODE_ENV))
       const userDto = await UserMapper.toDtoPermRoles(user);
       const createdLoginLog = await this.loginLogService.create(user, ip, ua);
       await this.mailService.sendEMail({
