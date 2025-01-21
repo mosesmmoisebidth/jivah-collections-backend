@@ -22,23 +22,18 @@ async function bootstrap() {
     app.use(helmet());
     app.use(compression());
     console.log("enabling cors")
-    app.enableCors({
-      origin: (origin, callback) => {
-        const allowedOrigins = ['http://localhost:3000', 'https://jivah.vercel.app'];
+    app.use((req, res, next) => {
+      const allowedOrigins = ['http://localhost:3000', 'https://jivah.vercel.app'];
+      const origin = req.headers.origin;
     
-        if (!origin || allowedOrigins.includes(origin)) {
-          // If the origin is in the allowedOrigins list or the request has no origin (like from Postman), allow it
-          callback(null, true);
-        } else {
-          // If the origin is not allowed, block it
-          callback(new Error('Not allowed by CORS'));
-        }
-      },
-      credentials: true, // Allow cookies
-      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS', // Explicitly allow HTTP methods
-      allowedHeaders: 'Content-Type,Authorization', // Explicitly allow headers
-    });
-    
+      if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+        res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+      }
+      next();
+    });    
     app.use(cookieParser());
     app.enableVersioning();
     app.useGlobalFilters(new HttpExceptionFilter());
