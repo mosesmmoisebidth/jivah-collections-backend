@@ -15,7 +15,6 @@ async function bootstrap() {
   try {
     const app = await NestFactory.create(AppModule, {
       bufferLogs: false,
-      cors: true,
     });
 
     const configService = app.get(ConfigService<ConfigKeyPaths>);
