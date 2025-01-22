@@ -87,13 +87,13 @@ import { TimeoutError } from 'rxjs';
       res.cookie('accessToken', tokens.accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        sameSite: 'none',
         maxAge: 1000 * 60 * 20, // 20 minutes for accessToken
       });
       res.cookie('refreshToken', tokens.refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        sameSite: 'none',
         maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days for refreshToken
       });
       console.log("the value of the environment is: " + JSON.stringify(process.env.NODE_ENV))
@@ -169,13 +169,13 @@ import { TimeoutError } from 'rxjs';
       res.cookie('accessToken', tokens.accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        sameSite: 'none',
         maxAge: 1000 * 60 * 20, // 20 minutes for accessToken
       });
       res.cookie('refreshToken', tokens.refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        sameSite: 'none',
         maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days for refreshToken
       });
       const userDto = await UserMapper.toDtoPermRoles(savedUser);
