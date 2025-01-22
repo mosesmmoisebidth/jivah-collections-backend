@@ -85,17 +85,22 @@ import { TimeoutError } from 'rxjs';
       }
       const tokens = await this.tokenService.generateTokens(user);
       res.cookie('accessToken', tokens.accessToken, {
+        path: '/',
         httpOnly: false,
         secure: true,
         sameSite: 'none',
         maxAge: 1000 * 60 * 20, // 20 minutes for accessToken
       });
       res.cookie('refreshToken', tokens.refreshToken, {
+        path: '/',
         httpOnly: false,
         secure: true,
         sameSite: 'none',
         maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days for refreshToken
       });
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
       console.log("the value of the environment is: " + JSON.stringify(process.env.NODE_ENV))
       const userDto = await UserMapper.toDtoPermRoles(user);
       const createdLoginLog = await this.loginLogService.create(user, ip, ua);
@@ -167,17 +172,22 @@ import { TimeoutError } from 'rxjs';
       const savedUser = await this.userRepository.save(userEntity);
       const tokens = await this.tokenService.generateTokens(savedUser);
       res.cookie('accessToken', tokens.accessToken, {
+        path: '/',
         httpOnly: false,
         secure: true,
         sameSite: 'none',
         maxAge: 1000 * 60 * 20, // 20 minutes for accessToken
       });
       res.cookie('refreshToken', tokens.refreshToken, {
+        path: '/',
         httpOnly: false,
         secure: true,
         sameSite: 'none',
         maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days for refreshToken
       });
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
       const userDto = await UserMapper.toDtoPermRoles(savedUser);
       this.loginLogService.create(savedUser, ip, ua);
       await this.mailService.sendEMail({
