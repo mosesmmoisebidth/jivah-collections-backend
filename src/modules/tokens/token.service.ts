@@ -155,7 +155,7 @@ export class TokensService {
         payload.tid,
       );
 
-      const accessExpiresAt = new Date(Date.now() + 20 * 60 * 1000); // 20 minutes from now
+      const accessExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 20 minutes from now
       const refreshExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
       return {
@@ -220,7 +220,7 @@ export class TokensService {
   ): Promise<{ accessToken: string; refreshToken: string; expiresAt: Date, refresh_expiresAt: Date }> {
     const refreshToken = await this.generateRefreshToken(user);
     const accessToken = await this.generateAccessToken(user, refreshToken.id);
-    const accessExpiresAt = new Date(Date.now() + 20 * 60 * 1000); // 20 minutes from now
+    const accessExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 20 minutes from now
     const refreshExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
     return {
       accessToken: accessToken.token,
