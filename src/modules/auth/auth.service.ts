@@ -85,13 +85,13 @@ import { TimeoutError } from 'rxjs';
       }
       const tokens = await this.tokenService.generateTokens(user);
       res.cookie('accessToken', tokens.accessToken, {
-        httpOnly: true,
+        httpOnly: false,
         secure: true,
         sameSite: 'none',
         maxAge: 1000 * 60 * 20, // 20 minutes for accessToken
       });
       res.cookie('refreshToken', tokens.refreshToken, {
-        httpOnly: true,
+        httpOnly: false,
         secure: true,
         sameSite: 'none',
         maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days for refreshToken
@@ -167,13 +167,13 @@ import { TimeoutError } from 'rxjs';
       const savedUser = await this.userRepository.save(userEntity);
       const tokens = await this.tokenService.generateTokens(savedUser);
       res.cookie('accessToken', tokens.accessToken, {
-        httpOnly: true,
+        httpOnly: false,
         secure: true,
         sameSite: 'none',
         maxAge: 1000 * 60 * 20, // 20 minutes for accessToken
       });
       res.cookie('refreshToken', tokens.refreshToken, {
-        httpOnly: true,
+        httpOnly: false,
         secure: true,
         sameSite: 'none',
         maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days for refreshToken
