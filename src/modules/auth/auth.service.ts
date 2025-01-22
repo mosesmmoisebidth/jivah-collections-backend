@@ -83,7 +83,11 @@ import { TimeoutError } from 'rxjs';
       if (user.status == UserStatus.Blocked) {
         throw new BadRequestCustomException('User blocked');
       }
+
       const tokens = await this.tokenService.generateTokens(user);
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
       res.cookie('accessToken', tokens.accessToken, {
         path: '/',
         httpOnly: false,
@@ -171,6 +175,9 @@ import { TimeoutError } from 'rxjs';
       userEntity.permissions = Promise.resolve([]);
       const savedUser = await this.userRepository.save(userEntity);
       const tokens = await this.tokenService.generateTokens(savedUser);
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
       res.cookie('accessToken', tokens.accessToken, {
         path: '/',
         httpOnly: false,
@@ -185,9 +192,6 @@ import { TimeoutError } from 'rxjs';
         sameSite: 'none',
         maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days for refreshToken
       });
-      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-      res.setHeader('Pragma', 'no-cache');
-      res.setHeader('Expires', '0');
       const userDto = await UserMapper.toDtoPermRoles(savedUser);
       this.loginLogService.create(savedUser, ip, ua);
       await this.mailService.sendEMail({
