@@ -42,7 +42,7 @@ export class PermissionsGuard implements CanActivate {
       permissions: true,
       roles: true,
     });
-    console.log("the userDto is: " + JSON.stringify(userDto))
+    
     const permissionDto = userDto.permissions || [];
     const roles = userDto.roles || []
     let allPermissions: string[] = permissionDto.map(({ slug }) => slug);
