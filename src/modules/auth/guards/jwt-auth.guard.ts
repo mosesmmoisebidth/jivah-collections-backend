@@ -6,12 +6,14 @@ import { TokensService } from 'src/modules/tokens/token.service';
 import { InternalServerErrorCustomException } from 'src/common/http';
 import { UnauthorizedCustomException } from 'src/common/http/exceptions/unauthorized.exception';
 import { AuthGuard } from '@nestjs/passport';
+import { UserRepository } from 'src/modules/users/model/users.repository';
 import { Request } from 'express';
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
   constructor(
     private tokenService: TokensService,
     private reflector: Reflector,
+    private userRepository: UserRepository
   ) {
     super();
   }
@@ -40,7 +42,10 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       }
       if (!accessToken) throw new UnauthorizedCustomException('Not logged in!');
       const payload = await this.tokenService.verifyAccessToken(accessToken);
-      request.user = payload;
+      const userEntity = await this.userRepository.findOne({
+        where: { id: payload.sub }
+      })
+      request.user = userEntity;
       return true;
     } catch (error) {
       if (error.name !== 'Error') throw error;

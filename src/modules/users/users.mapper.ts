@@ -36,6 +36,9 @@ export class UserMapper {
                 dto[key] = entity[key];
             }else{
                 if(permissions){
+                  if(!entity.permissions){
+                    entity.permissions = Promise.resolve([]);
+                  }
                   console.log("this condition has been reached");
                     const permissions = (await entity.permissions).filter((permission) => permission.active === true);
                     if(permissions.length > 0){
@@ -47,6 +50,9 @@ export class UserMapper {
                     }
                 }
                 if(roles){
+                  if(!entity.roles){
+                    entity.roles = Promise.resolve([]);
+                  }
                   console.log("the condition has reached");
                     const roles = (await entity.roles).filter((role) => role.active === true);
                     console.log("the roles are: " + JSON.stringify(roles));
