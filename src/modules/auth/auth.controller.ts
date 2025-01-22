@@ -42,8 +42,9 @@ import {
       @Body(ValidationPipe) authRegisterDto: AuthRegisterRequestDto,
       @Ip() ip: string,
       @Headers('user-agent') ua: string,
+      @Res({ passthrough: true }) res: Response
     ): Promise<ResponseDto<LoginResponseDto>> {
-      return this.authService.register(authRegisterDto, ip, ua);
+      return this.authService.register(authRegisterDto, ip, ua, res);
     }
   
     @ApiOkCustomResponse(LoginResponseDto)
