@@ -157,10 +157,7 @@ import { RemovePermissionsFromUserDto } from './dto/remove-permissions.dto';
           where: [{ username }, { email }],
         });
         if(userExists){
-          return this.responseService.makeResponse({
-            message: `User already exists`,
-            payload: null
-          })
+          throw new ConflictCustomException(`User already exsist`);
         }
         const profilesFile = path.resolve(
                 process.cwd(),

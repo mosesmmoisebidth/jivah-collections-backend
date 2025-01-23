@@ -1,6 +1,5 @@
 import {
   ArrayNotEmpty,
-  IsAlphanumeric,
   IsArray,
   IsNotEmpty,
   IsOptional,
@@ -13,7 +12,7 @@ import { Transform } from 'class-transformer';
 
 export class CreateUserRequestDto {
   @IsNotEmpty()
-  @IsAlphanumeric()
+  @IsString()
   @ApiProperty({
     example: 'username',
   })
