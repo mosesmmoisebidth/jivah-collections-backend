@@ -84,9 +84,7 @@ export class UpdateProductDto {
     @IsString({ each: true })
     product_gallery?: string[];
 
-    @ApiProperty({
-        required:false
-    })
+    @ApiProperty()
     @IsOptional()
     @Transform(({ value }) => Array.isArray(value) ? value : [value])
     @IsString({ each: true })

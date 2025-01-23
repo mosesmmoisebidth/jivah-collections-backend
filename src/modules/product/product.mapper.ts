@@ -40,9 +40,18 @@ export class ProductMapper {
         entity: ProductGeneralEntity,
         dto: UpdateProductDto
     ): ProductGeneralEntity {
-        for (const [key, value] of Object.entries(dto)){
-            if(this.isValidValue(value)){
-                entity[key] = value;
+        const keys = new Set([
+            'product_name', 'short_description',
+            'product_description', 'regular_price',
+            'sale_price', 'discount_price',
+            'category', 'from_date', 'to_date',
+            'product_image', 'product_gallery',
+            'tags', 'in_stock', 'sku', 'isbn',
+            'track_stock', 'quantity', 'store_threshold'
+        ])
+        for (const key of keys){
+            if(this.isValidValue(dto[key])){
+                entity[key] = dto[key]
             }
         }
         return entity;
@@ -93,7 +102,7 @@ export class ProductMapper {
         dto.updatedAt = product.updatedAt;
         dto.product_image = product.product_image;
         dto.product_name = product.product_name;
-        dto.discount_price = product.discount_price > 0 ? product.discount_price : 0;
+        dto.discount_price = product.sale_price > 0 ? product.sale_price : 0;
         dto.sale_price = entity.price;
         dto.quantity = entity.quantity;
         return dto;
