@@ -40,6 +40,7 @@ async function bootstrap() {
     });    
     app.use(cookieParser());
     app.enableVersioning();
+    console.log("Added Some Consoles");
     app.useGlobalFilters(new HttpExceptionFilter());
     app.useGlobalPipes(new ValidationPipe(validationOptions));
     app.setGlobalPrefix(apiPrefix);
