@@ -4,7 +4,7 @@ export const typeOrmRegToken = 'typeorm';
 
 export const TypeOrmConfig = registerAs(typeOrmRegToken, () => ({
   type: process.env.TYPEORM_CONNECTION || 'postgres',
-  url: process.env.TYPEORM_URL || 'postgresql://trippletrade_owner:EAOcKI7rmM1T@ep-small-flower-a5xfe4ub.us-east-2.aws.neon.tech/trippletrade?sslmode=require',
+  url: 'postgresql://taskbees-web_owner:npg_KMeuWNo9Dr7p@ep-noisy-voice-a5i8ukaj-pooler.us-east-2.aws.neon.tech/jivah-collections-web-app?sslmode=require',
   entities: [process.env.TYPEORM_ENTITIES || 'src/modules/**/*entity.ts'],
   migrations: [
     process.env.TYPEORM_MIGRATIONS || 'src/database/migrations/**/*.ts',
