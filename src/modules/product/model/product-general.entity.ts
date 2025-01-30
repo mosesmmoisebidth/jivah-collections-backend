@@ -14,6 +14,13 @@ export class ProductGeneralEntity extends CommonEntity {
     @Column({ nullable: false, type: 'jsonb', default: ["None"] })
     short_description: string[];
 
+    @Column({ nullable: true, type: 'jsonb', default: ["None"]})
+    colors: string[]
+
+    @Column({ nullable: true, type: 'jsonb', default: ["None"]})
+    sizes: string[]
+
+
     @Column({ nullable: true, type: 'jsonb', default: ["None"] })
     product_description: string[];
 

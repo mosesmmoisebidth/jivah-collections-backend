@@ -26,7 +26,7 @@ export class ProductMapper {
             'sale_price', 'discount_price',
             'sale_price', 'category', 'to_date',
             'from_date', 'product_image', 'product_gallery',
-            'tags', 'in_stock'
+            'tags', 'in_stock', 'colors', 'sizes'
         ])
         for(const [key, value] of Object.entries(dto)){
             if(dtoKeys.has(key) && this.isValidValue(value)){
@@ -47,7 +47,8 @@ export class ProductMapper {
             'category', 'from_date', 'to_date',
             'product_image', 'product_gallery',
             'tags', 'in_stock', 'sku', 'isbn',
-            'track_stock', 'quantity', 'store_threshold'
+            'track_stock', 'quantity', 'store_threshold',
+            'sizes', 'colors'
         ])
         for (const key of keys){
             if(this.isValidValue(dto[key])){
@@ -82,7 +83,7 @@ export class ProductMapper {
             'product_image', 'product_gallery',
             'tags', 'in_stock', 'sku', 'isbn',
             'track_stock', 'quantity', 'store_threshold',
-            'quantity'
+            'quantity', 'colors', 'sizes'
         ])
         for(const [key, value] of Object.entries(entity)){
             if(dtoKeys.has(key) && this.isValidValue(value)){

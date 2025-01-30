@@ -69,7 +69,10 @@ export default class CreateUsersSeed implements Seeder {
         user.roles = Promise.resolve(allRoles);
         await connection.manager.save(user);
       }else{
-        console.log("The user was not found");
+        const user = new UserEntity(userData);
+        user.roles = Promise.resolve(allRoles);
+        user.permissions = Promise.resolve([]);
+        await connection.manager.save(user);
       }
     }
   }

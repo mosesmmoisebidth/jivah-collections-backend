@@ -21,6 +21,22 @@ export class CreateProductGeneralRequestDto {
     @IsString({ each: true })
     product_description: string[];
 
+    @ApiProperty({
+        required: false
+    })
+    @IsOptional()
+    @Transform(({ value }) => Array.isArray(value) ? value : [value])
+    @IsString({ each: true })
+    colors?: string[];
+
+    @ApiProperty({
+        required: false
+    })
+    @IsOptional()
+    @Transform(({ value }) => Array.isArray(value) ? value : [value])
+    @IsString({ each: true })
+    sizes?: string[];
+
     @ApiProperty()
     @IsNotEmpty()
     @Transform(({ value }) => Number(value))

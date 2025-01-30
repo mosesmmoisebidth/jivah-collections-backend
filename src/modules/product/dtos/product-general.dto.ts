@@ -11,6 +11,12 @@ export class ProductGeneralDto extends BaseDto {
     
         @ApiProperty()
         product_description: string[];
+
+        @ApiProperty()
+        colors: string[];
+    
+        @ApiProperty()
+        sizes: string[];
     
         @ApiProperty()
         regular_price: number;

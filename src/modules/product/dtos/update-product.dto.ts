@@ -28,6 +28,18 @@ export class UpdateProductDto {
     @IsString({ each: true })
     product_description?: string;
 
+    @ApiProperty()
+    @IsOptional()
+    @Transform(({ value }) => Array.isArray(value) ? value : [value])
+    @IsString({ each: true })
+    colors?: string[];
+
+    @ApiProperty()
+    @IsOptional()
+    @Transform(({ value }) => Array.isArray(value) ? value : [value])
+    @IsString({ each: true })
+    sizes?: string[];
+
     @ApiProperty({
         required: false,
     })
