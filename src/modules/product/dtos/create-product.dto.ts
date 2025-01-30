@@ -27,7 +27,7 @@ export class CreateProductDto {
     @IsOptional()
     @Transform(({ value }) => Array.isArray(value) ? value : [value])
     @IsString({ each: true })
-    colors: string[];
+    colors?: string[];
 
     @ApiProperty({
         required: false
@@ -35,7 +35,7 @@ export class CreateProductDto {
     @IsOptional()
     @Transform(({ value }) => Array.isArray(value) ? value : [value])
     @IsString({ each: true })
-    sizes: string[];
+    sizes?: string[];
 
     @ApiProperty()
     @IsNotEmpty()
