@@ -11,12 +11,12 @@ export class UpdateUserRequestDto {
   username: string;
 
   @IsOptional()
-  @Transform(({ value }) => (value === '' ? undefined : value))
+  @IsString()
   @ApiProperty({
     description: 'user phone number',
     required: false,
   })
-  phoneNumber: string[];
+  phoneNumber: string;
 
   @IsOptional()
   @Transform(({ value }) => (value === '' ? undefined : value))
