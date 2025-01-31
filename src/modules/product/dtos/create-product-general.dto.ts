@@ -1,7 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
 import { IsNotEmpty, IsString, IsOptional, IsNumber, IsBoolean } from "class-validator";
-import { EProductCategory } from "../enums/product-category.enum";
 export class CreateProductGeneralRequestDto {
 
     @ApiProperty()
@@ -51,11 +50,10 @@ export class CreateProductGeneralRequestDto {
 
     @ApiProperty({
         required: true,
-        enum: EProductCategory
     })
     @Transform(({ value }) => Array.isArray(value) ? value : [value])
     @IsString({ each: true })
-    category: EProductCategory;
+    category: string[];
 
     @ApiProperty()
     @IsOptional()
