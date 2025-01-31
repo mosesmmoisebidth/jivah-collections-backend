@@ -14,12 +14,11 @@ export class UpdateUserDto extends PartialType(CreateUserRequestDto) {
   username: string;
 
   @IsOptional()
-  @Transform(({ value }) => (value === '' ? undefined : value))
   @ApiProperty({
     description: 'user phone number',
     required: false,
   })
-  phoneNumber: string[];
+  phoneNumber: string;
 
   @IsOptional()
   @Transform(({ value }) => (value === '' ? undefined : value))

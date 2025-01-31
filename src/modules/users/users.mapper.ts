@@ -29,6 +29,7 @@ export class UserMapper {
           'id', 'username',
           'firstName', 'lastName',
           'email', 'status', 'profilePhoto',
+          'phoneNumber',
           'createdAt', 'updatedAt', 'role'
         ])
         for(const key in entity){

@@ -29,6 +29,9 @@ import {
   
     @Column({ nullable: false, unique: true, default: 'seller@gmail.com' })
     email: string;
+
+    @Column({ nullable: true, default: "None" })
+    phoneNumber: string;
   
     @Column({
       nullable: false,

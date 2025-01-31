@@ -8,7 +8,6 @@ import {
   IsEmail
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
 
 export class CreateUserRequestDto {
   @IsNotEmpty()
@@ -19,11 +18,11 @@ export class CreateUserRequestDto {
   username: string;
 
   @IsOptional()
-  @Transform(({ value }) => Array.isArray(value) ? value : [value])
+  @IsString()
   @ApiProperty({
     example: ['+260xxxxx'],
   })
-  phoneNumber: string[];
+  phoneNumber: string;
 
   @IsNotEmpty()
   @IsEmail()
