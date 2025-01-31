@@ -37,7 +37,7 @@ export class ProductGeneralEntity extends CommonEntity {
     @Column({ nullable: false, default: false })
     is_scheduled: boolean;
 
-    @Column({ nullable: false, default: ["None"] })
+    @Column({ nullable: false, type: 'jsonb', default: ["None"] })
     category: string[];
 
     @Column({ nullable: true, default: "None" })
