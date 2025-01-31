@@ -22,9 +22,9 @@ export class ProductMapper {
         const entity = new ProductGeneralEntity();
         const dtoKeys = new Set([
             'product_name', 'short_description',
-            'product_description', 'regular_price',
+            'product_description',
             'sale_price', 'discount_price',
-            'sale_price', 'category', 'to_date',
+            'category', 'to_date', 'length', 'length_type',
             'from_date', 'product_image', 'product_gallery',
             'tags', 'in_stock', 'colors', 'sizes'
         ])
@@ -42,7 +42,7 @@ export class ProductMapper {
     ): ProductGeneralEntity {
         const keys = new Set([
             'product_name', 'short_description',
-            'product_description', 'regular_price',
+            'product_description',
             'sale_price', 'discount_price',
             'category', 'from_date', 'to_date',
             'product_image', 'product_gallery',
@@ -77,13 +77,13 @@ export class ProductMapper {
         const dtoKeys = new Set([
             'id', 'createdAt', 'updatedAt',
             'product_name', 'short_description',
-            'product_description', 'regular_price',
+            'product_description',
             'sale_price', 'discount_price',
             'category', 'from_date', 'to_date',
             'product_image', 'product_gallery',
             'tags', 'in_stock', 'sku', 'isbn',
             'track_stock', 'quantity', 'store_threshold',
-            'quantity', 'colors', 'sizes'
+            'quantity', 'colors', 'sizes', 'length', 'length_type'
         ])
         for(const [key, value] of Object.entries(entity)){
             if(dtoKeys.has(key) && this.isValidValue(value)){

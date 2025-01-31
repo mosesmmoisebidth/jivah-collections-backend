@@ -1,5 +1,4 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { EProductCategory } from "../enums/product-category.enum";
 import { BaseDto } from "src/common/dtos/base.dto";
 export class ProductGeneralDto extends BaseDto {
 
@@ -19,16 +18,13 @@ export class ProductGeneralDto extends BaseDto {
         sizes: string[];
     
         @ApiProperty()
-        regular_price: number;
-    
-        @ApiProperty()
         sale_price: number;
     
         @ApiProperty()
         discount_price: number;
     
         @ApiProperty()
-        category: EProductCategory;
+        category: string[];
     
         @ApiProperty()
         from_date: string;

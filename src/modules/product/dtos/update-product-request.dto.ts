@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsString, IsNumber, IsEnum, IsOptional, IsBoolean } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsBoolean } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { EProductCategory } from "../enums/product-category.enum";
 
@@ -50,14 +50,6 @@ export class UpdateProductRequestDto {
         @IsOptional()
         @Transform(({ value }) => Number(value))
         @IsNumber()
-        regular_price?: number;
-    
-        @ApiProperty({
-            required: false,
-        })
-        @IsOptional()
-        @Transform(({ value }) => Number(value))
-        @IsNumber()
         sale_price?: number;
     
         @ApiProperty({
@@ -73,8 +65,9 @@ export class UpdateProductRequestDto {
             enum: Object.values(EProductCategory)
         })
         @IsOptional()
-        @IsEnum(EProductCategory)
-        category?: EProductCategory;
+        @Transform(({ value }) => Array.isArray(value) ? value : [value])
+        @IsString({ each: true })
+        category?: string[];
     
         @ApiProperty({
             required: false,
@@ -89,6 +82,21 @@ export class UpdateProductRequestDto {
         @IsOptional()
         @IsString()
         to_date?: string;
+
+        @ApiProperty({
+            required: false
+        })
+        @IsOptional()
+        @Transform(({ value }) => Array.isArray(value) ? value : [value])
+        @IsString({ each: true })
+        length?: string[];
+    
+        @ApiProperty({
+            required: false
+        })
+        @IsOptional()
+        @IsString()
+        length_type?: string;
     
         @ApiProperty({
             required: false,

@@ -1,6 +1,5 @@
 import { CommonEntity } from "src/common/entities";
 import { Entity, Column, ManyToMany, OneToMany } from 'typeorm';
-import { EProductCategory } from "../enums/product-category.enum";
 import { EProductStatus } from "../enums/roduct-status.enum";
 import { EProductQuantityStatus } from "../enums/product-status-quantity.enum";
 import { CartEntity } from "src/modules/cart/model/cart.entity";
@@ -15,29 +14,31 @@ export class ProductGeneralEntity extends CommonEntity {
     short_description: string[];
 
     @Column({ nullable: true, type: 'jsonb', default: ["None"]})
-    colors: string[]
+    colors: string[];
 
     @Column({ nullable: true, type: 'jsonb', default: ["None"]})
-    sizes: string[]
+    sizes: string[];
 
+    @Column({ nullable: true, default: "None" })
+    length_type: string;
+
+    @Column({ nullable: true, type: 'jsonb', default: ["None"] })
+    length: string[];
 
     @Column({ nullable: true, type: 'jsonb', default: ["None"] })
     product_description: string[];
 
     @Column({ nullable: false })
-    regular_price: number;
-
-    @Column({ nullable: false })
     sale_price: number;
 
-    @Column({ nullable: false })
+    @Column({ nullable: false, default: 0 })
     discount_price: number;
 
     @Column({ nullable: false, default: false })
-    is_shceduled: boolean;
+    is_scheduled: boolean;
 
-    @Column({ nullable: false, type: 'enum', enum: EProductCategory, default: EProductCategory.NONE })
-    category: EProductCategory;
+    @Column({ nullable: false, default: ["None"] })
+    category: string[];
 
     @Column({ nullable: true, default: "None" })
     from_date: string;
