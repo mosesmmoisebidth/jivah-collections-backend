@@ -479,6 +479,7 @@ import { RemovePermissionsFromUserDto } from './dto/remove-permissions.dto';
         id: this.req.user.id,
         status: UserStatus.Active,
       });
+      console.log("added some consoles for debugging");
       if (!userEntity) throw new NotFoundException();
       return this.responseService.makeResponse({
         message: 'Profile found',
