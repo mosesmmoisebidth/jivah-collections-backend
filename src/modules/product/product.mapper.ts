@@ -13,8 +13,13 @@ import { CartProductDto } from "./dtos/product-cart.dto";
 
 export class ProductMapper {
     public static isValidValue(value: any): boolean {
-        return value !== undefined && value !== null && value !== '' && !(typeof value === 'string' && (value.trim() === '' || value === 'string'));
+        return value !== undefined &&
+               value !== null &&
+               value !== '' &&
+               !(typeof value === 'string' && (value.trim() === '' || value === 'string')) &&
+               !(Array.isArray(value) && (value.length === 0 || (value.length === 1 && value[0] === 'string')));
     }
+    
 
     public static  toCreateEntity(
         dto: CreateProductDto
