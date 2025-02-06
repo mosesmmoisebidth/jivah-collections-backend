@@ -4,7 +4,7 @@ export const typeOrmRegToken = 'typeorm';
 
 export const TypeOrmConfig = registerAs(typeOrmRegToken, () => ({
   type: process.env.TYPEORM_CONNECTION || 'postgres',
-  url: 'postgresql://taskbees-web_owner:npg_KMeuWNo9Dr7p@ep-noisy-voice-a5i8ukaj-pooler.us-east-2.aws.neon.tech/jivah-collections-web-app?sslmode=require',
+  url: 'postgresql://postgres:NpqyCkfPCnsZRIaLhdtxflrqLTiJGctQ@viaduct.proxy.rlwy.net:15860/railway',
   entities: [process.env.TYPEORM_ENTITIES || 'src/modules/**/*entity.ts'],
   migrations: [
     process.env.TYPEORM_MIGRATIONS || 'src/database/migrations/**/*.ts',
