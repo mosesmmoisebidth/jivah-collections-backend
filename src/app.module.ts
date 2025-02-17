@@ -14,6 +14,7 @@ import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 import { ProductModule } from './modules/product/product.module';
 import { CartModule } from './modules/cart/cart.module';
 import config from './config';
+import { PaymentModule } from './modules/payment/payment.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import config from './config';
     ProductModule,
     CartModule,
     RolesModule,
+    PaymentModule,
     PermissionsModule,
   ],
 })
