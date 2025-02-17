@@ -26,7 +26,7 @@ export class PaymentController {
     @ApiUnauthorizedCustomResponse(NullDto)
     @ApiForbiddenCustomResponse(NullDto)
     @ApiBearerAuth(TOKEN_NAME)
-    @Post('payment/initiate')
+    @Post('/payout/success')
     async createPayment(
         @Body(ValidationPipe) dto: CreatePaymentDto
     ): Promise<ResponseDto<PaymentResponseDto>> {
