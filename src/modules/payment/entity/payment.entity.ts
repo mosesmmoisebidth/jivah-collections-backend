@@ -31,8 +31,8 @@ export class PaymentEntity extends CommonEntity {
     @Column({ nullable: false, default: "None" })
     payment_purpose: string;
 
-    @Column({ nullable: false, default: "None"})
-    amount: string;
+    @Column({ nullable: false, default: 0})
+    amount: number;
 
     @Column({ nullable: false, default: "None"})
     currency: string;

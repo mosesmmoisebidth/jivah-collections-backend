@@ -29,7 +29,7 @@ export class PaymentResponseDto {
         payment_purpose: string;
     
         @ApiProperty()
-        amount: string;
+        amount: number;
     
         @ApiProperty()
         currency: string;
@@ -45,5 +45,5 @@ export class PaymentResponseDto {
     
         @ApiProperty()
         slip_number: string;
-        
+
 }

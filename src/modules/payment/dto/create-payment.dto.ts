@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, IsNumber } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class CreatePaymentDto {
 
@@ -49,9 +50,10 @@ export class CreatePaymentDto {
     payment_purpose
 
     @ApiProperty()
-    @IsOptional()
-    @IsString()
-    amount
+    @IsNotEmpty()
+    @Transform(({ value }) => Number(value))
+    @IsNumber()
+    amount: number;
 
     @ApiProperty()
     @IsOptional()
